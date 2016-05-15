@@ -5,11 +5,11 @@ A light-weight package used to read and write numbers in engineering format. In
 engineering format a number generally includes the units if available and uses 
 SI scale factors to indicate the magnitude of the number. For example:
 
-| 1ns
-| 1.4204GHz
+   | 1ns
+   | 1.4204GHz
 
 Generally one uses the shortcut functions to convert numbers to and from 
-engineering format::
+engineering format:
 
 .. code-block:: python
 
@@ -33,10 +33,8 @@ engineering format::
    >>> to_number_as_str('1.4204GHz')
    '1.4204e9'
 
-   strip_units, to_number
-
 You can adjust some of the behavior of these functions on a global basis using 
-set_preferences::
+set_preferences:
 
 .. code-block:: python
 
@@ -55,7 +53,7 @@ Quantity Class
 --------------
 
 Though rarely used, the engfmt package defines the Quantity class, which is 
-a bit more flexible than the shortcut functions::
+a bit more flexible than the shortcut functions:
 
 .. code-block:: python
 
@@ -79,11 +77,15 @@ Exceptions
 ----------
 
 A ValueError is raised if engfmt is passed a string it cannot convert into 
-a number::
+a number:
 
 .. code-block:: python
 
-   >>> 
+   >>> try:
+   ...     value, units = from_eng_fmt('xxx')
+   ... except ValueError as err:
+   ...     print(str(err))
+   xxx: not a valid number.
 
 
 Installation
