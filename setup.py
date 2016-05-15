@@ -17,7 +17,7 @@ setup(
     download_url='https://github.com/kenkundert/engfmt/tarball/master',
     license='GPLv3+',
     zip_safe=True,
-    packages=['inform'],
+    py_modules=['engfmt'],
     install_requires=[
         'six',
     ],
