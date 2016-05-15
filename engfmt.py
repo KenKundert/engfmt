@@ -140,7 +140,7 @@ number_converters = [
     for pattern, get_mant, get_sf, get_units  in [
         number_with_exponent, number_with_scale_factor, simple_number,
         currency_with_exponent, currency_with_scale_factor, simple_currency,
-        nan_with_units, currency_nan, simple_nan,
+        nan_with_units, currency_nan, simple_nan
     ]
 ]
 
