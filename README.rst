@@ -1,4 +1,4 @@
-EngFmt - Engineering Format
+engfmt - Engineering Format
 ===========================
 
 A light-weight package used to read and write numbers in engineering format. In 
