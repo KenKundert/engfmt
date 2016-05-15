@@ -1,4 +1,3 @@
-from inform import error, Error
 from engfmt import Quantity, set_preferences
 
 class TestCase:
@@ -227,5 +226,5 @@ def test_recognition():
         except ValueError:
             assert None is case.raw, case.name
         except Exception:
-            error('unexpected exception occurred.', culprit=case.name)
+            print('%s: unexpected exception occurred.' % case.name)
             raise
