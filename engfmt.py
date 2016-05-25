@@ -1,6 +1,16 @@
 # Physical Quantities
 #
 # Utilities for working with physical quantities (numbers with units).
+#
+# This module inputs and outputs in several different forms:
+#    quantities (numbers with units):
+#        (1e6, 'Hz') -- quant
+#        '1MHz'      -- eng_quant
+#        '1e6Hz'     -- flt_quant
+#    numbers (numbers without units):
+#        1e6         -- num
+#        '1M'        -- eng_num
+#        '1e6'       -- flt_num
 
 # License {{{1
 # Copyright (C) 2016 Kenneth S. Kundert
@@ -67,8 +77,24 @@ scale_factor = named_regex('sf', '[%s]' % ''.join(MAPPINGS))
 units = named_regex('units', r'(?:[a-zA-Z][-^/()\w]*)?')
     # examples: Ohms, V/A, J-s, m/s^2, H/(m-s)
     # leading char must be letter to avoid 1.0E-9s -> ('1.0e18', '-9s')
+smpl_units = named_regex('units', r'(?:[a-zA-Z_]*)')
+    # may only contain alphabetic characters, ex: V, A, Ohms, etc.
 currency = named_regex('currency', '[%s]' % CURRENCY_SYMBOLS)
 nan = named_regex('nan', '(?i)inf|nan')
+left_delimit = r'(?:\A|(?<=[^a-zA-Z0-9_.]))'
+right_delimit = r'(?=[^-+0-9_]|\Z)'
+
+embedded_engineering_notation = re.compile(
+    '{left_delimit}{mantissa}{scale_factor}{smpl_units}{right_delimit}'.format(
+        **locals()
+    )
+)
+
+embedded_floating_point_notation = re.compile(
+    '{left_delimit}{mantissa}{exponent}?{smpl_units}{right_delimit}'.format(
+        **locals()
+    )
+)
 
 number_with_scale_factor = (
     r'{sign}{mantissa}\s*{scale_factor}{units}'.format(**locals()),
@@ -134,7 +160,6 @@ simple_nan = (
     lambda match: ''
 )
 
-
 number_converters = [
     (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
     for pattern, get_mant, get_sf, get_units  in [
@@ -145,10 +170,35 @@ number_converters = [
 ]
 
 # Utilities {{{1
+# is_str {{{2
 from six import string_types
 def is_str(obj):
     """Identifies strings in all their various guises."""
     return isinstance(obj, string_types)
+
+def to_str(num):
+    return "{0:.{1}g}".format(num, Precision)
+
+# _combine {{{2
+def _combine(mantissa, sf, units, spacer):
+    mantissa = mantissa.lstrip('+')
+    if units:
+        if units in CURRENCY_SYMBOLS:
+            # prefix the value with the units
+            if mantissa[0] == '-':
+                # if negative, the sign goes before the currency symbol
+                return '-' + units + mantissa[1:] + sf
+            else:
+                return units + mantissa + sf
+        else:
+            if sf in MAPPINGS:
+                # has a scale factor
+                return mantissa + spacer + sf + units
+            else:
+                # has an exponent
+                return mantissa + sf + spacer + units
+    else:
+        return mantissa + sf
 
 # Preferences {{{1
 Precision = DEFAULT_PRECISION
@@ -211,16 +261,21 @@ class Quantity:
                     return
             raise ValueError('%s: not a valid number.' % value)
 
-    def value(self):
-        """Returns the value as a float."""
-        if self._value is None:
-            sf = self._scale_factor
-            return float(self._mantissa + MAPPINGS.get(sf, [sf])[0])
-        else:
-            return self._value
+    def is_infinite(self):
+        value = self._mantissa if self._value is None else str(self._value)
+        return value.lower() in ['inf', '-inf', '+inf']
 
-    def rawvalue(self):
-        """Returns the value as a string.
+    def is_nan(self):
+        value = self._mantissa if self._value is None else str(self._value)
+        return value.lower() in ['nan', '-nan', '+nan']
+
+    def units(self):
+        """Returns the units."""
+        return self._units
+
+    def strip_units(self):
+        """Returns the value as a string in the originally given notation.
+
         The original string is returned with units removed. This allows you
         access to the value specified without any loss of precision if the value
         was specified as a string.
@@ -228,10 +283,19 @@ class Quantity:
         if self._value is None:
             return self._mantissa + self._scale_factor
         else:
-            return str(self._value)
+            return to_str(self._value)
 
-    def svalue(self):
-        """Returns the value as a string.
+    def to_number(self):
+        """Returns the value as a float."""
+        if self._value is None:
+            sf = self._scale_factor
+            return float(self._mantissa + MAPPINGS.get(sf, [sf])[0])
+        else:
+            return self._value
+
+    def to_flt_number(self):
+        """Renders the value as a string in floating point notation.
+
         The original string is returned with units removed and the scale factor
         converted to exponential form. This allows you access to the value
         specified without any loss of precision if the value was specified as a
@@ -241,58 +305,41 @@ class Quantity:
             sf = self._scale_factor
             return self._mantissa + MAPPINGS.get(sf, [sf])[0]
         else:
-            return str(self._value)
+            return to_str(self._value)
 
-    def units(self):
-        """Returns the units."""
-        return self._units
+    def to_eng_number(self, prec=None):
+        """Renders the value as a string in engineering notation."""
+        # this is a bit of a hack, temporarily remove the units
+        units = self.units()
+        self._units = None
+        eng_number = self.to_eng_quantity(prec)
+        self._units = units
+        return eng_number
 
-    def quantity(self):
+    def to_quantity(self):
         """Returns a tuple that contains the value as a float and the units."""
-        return self.value(), self.units()
+        return self.to_number(), self.units()
 
-    def is_infinite(self):
-        value = self._mantissa if self._value is None else str(self._value)
-        return value.lower() in ['inf', '-inf', '+inf']
+    def to_flt_quantity(self):
+        """Renders the value and units as a string in floating point notation."""
+        number = self.to_flt_number()
+        units = self.units()
+        return _combine(number, '', units, Spacer)
 
-    def is_nan(self):
-        value = self._mantissa if self._value is None else str(self._value)
-        return value.lower() in ['nan', '-nan', '+nan']
-
-    def render(self, prec=None):
-        """renders value and units"""
+    def to_eng_quantity(self, prec=None):
+        """Renders the value and units as a string in engineering notation."""
 
         # determine precision
         if prec is None:
             prec = Precision
         assert (prec >= 0)
 
-        def combine(mantissa, sf, units, spacer):
-            mantissa = mantissa.lstrip('+')
-            if units:
-                if units in CURRENCY_SYMBOLS:
-                    # prefix the value with the units
-                    if mantissa[0] == '-':
-                        # if negative, the sign goes before the currency symbol
-                        return '-' + units + mantissa[1:] + sf
-                    else:
-                        return units + mantissa + sf
-                else:
-                    if sf in MAPPINGS:
-                        # has a scale factor
-                        return mantissa + spacer + sf + units
-                    else:
-                        # has an exponent
-                        return mantissa + sf + spacer + units
-            else:
-                return mantissa + sf
-
         # check for infinities or NaN
         if self.is_infinite() or self.is_nan():
-            return combine(self.rawvalue(), '', self.units(), ' ')
+            return _combine(self.strip_units(), '', self.units(), ' ')
 
         # convert into scientific notation with proper precision
-        value = self.value()
+        value = self.to_number()
         units = self.units()
         number = "%.*e" % (prec, value)
         mantissa, exp = number.split("e")
@@ -333,23 +380,72 @@ class Quantity:
         #remove trailing decimal point
         mantissa = mantissa.rstrip(".")
 
-        return combine(mantissa, sf, units, Spacer)
+        return _combine(mantissa, sf, units, Spacer)
 
     def __str__(self):
-        return self.render()
+        return self.to_eng_quantity()
 
 # Shortcut functions {{{1
-def from_eng_fmt(value, units=None):
-    return Quantity(value, units).quantity()
+def to_quantity(value, units=None):
+    return Quantity(value, units).to_quantity()
 
-def to_eng_fmt(value, units=None, prec=None):
-    return Quantity(value, units).render(prec)
+def to_eng_quantity(value, units=None, prec=None):
+    return Quantity(value, units).to_eng_quantity(prec)
 
-def strip_units(value, units=None):
-    return Quantity(value, units).rawvalue()
+def to_flt_quantity(value, units=None):
+    return Quantity(value, units).to_flt_quantity()
 
 def to_number(value, units=None):
-    return Quantity(value, units).value()
+    return Quantity(value, units).to_number()
 
-def to_number_as_str(value, units=None):
-    return Quantity(value, units).svalue()
+def to_eng_number(value, units=None, prec=None):
+    return Quantity(value, units).to_eng_number(prec)
+
+def to_flt_number(value, units=None):
+    return Quantity(value, units).to_flt_number()
+
+# Text processing functions {{{1
+# All to engineering format {{{2
+def all_to_eng_fmt(text):
+    """Convert all quantities found in text to engineering format.
+
+    It is assumed that any units are assumed to be simple, meaning that they
+    contain only alphabetic characters (no numbers or symbols)."""
+
+    out = []
+    start = 0
+    for match in embedded_floating_point_notation.finditer(text):
+        end = match.start(0)
+        number = match.group(0)
+        try:
+            number = to_eng_quantity(number)
+        except ValueError:
+            # something unexpected happened
+            # but this is not essential, so ignore it
+            pass
+        out.append(text[start:end] + number)
+        start = match.end(0)
+    return ''.join(out) + text[start:]
+
+# All from engineering format {{{2
+def all_from_eng_fmt(text):
+    """Replace all occurrences of quantities found in text to engineering format.
+
+    It is assumed that there is no space between the number and the scale factor
+    and any units are assumed to be simple, meaning that they contain only
+    alphabetic characters (no numbers or symbols)."""
+
+    out = []
+    start = 0
+    for match in embedded_engineering_notation.finditer(text):
+        end = match.start(0)
+        number = match.group(0)
+        try:
+            number = to_flt_quantity(number)
+        except ValueError:
+            # something unexpected happened
+            # but this is not essential, so ignore it
+            pass
+        out.append(text[start:end] + number)
+        start = match.end(0)
+    return ''.join(out) + text[start:]

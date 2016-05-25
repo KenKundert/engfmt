@@ -9,6 +9,15 @@ class TestCase:
         self.prefs = prefs
 
 test_cases = [
+    TestCase('grange', '0', ('0', ''), '0'),
+    TestCase('waltz', '0s', ('0', 's'), '0s'),
+    TestCase('allay', '0 s', ('0', 's'), '0s'),
+    TestCase('tribute', '$0', ('0', '$'), '$0'),
+    TestCase('lunatic', '1', ('1', ''), '1'),
+    TestCase('seafront', '1s', ('1', 's'), '1s'),
+    TestCase('birthday', '1 s', ('1', 's'), '1s'),
+    TestCase('energy', '$1', ('1', '$'), '$1'),
+
     # test all the scale factors
     TestCase('quill', '1ys', ('1e-24', 's'), '1e-24s'),
     TestCase('joust', '1zs', ('1e-21', 's'), '1e-21s'),
@@ -209,7 +218,7 @@ test_cases = [
 ]
 
 names = set()
-def test_recognition():
+def test_number_recognition():
     for case in test_cases:
         assert case.name not in names
         names.add(case.name)
@@ -217,7 +226,7 @@ def test_recognition():
             if case.prefs:
                 set_preferences(**case.prefs)
             q = Quantity(case.text)
-            assert ((q.svalue(), q.units()) == case.raw), case.name
+            assert ((q.to_flt_number(), q.units()) == case.raw), case.name
             assert (str(q) == case.formatted), case.name
             # assure that the output value can be read as an input
             Quantity(str(q))
@@ -228,3 +237,4 @@ def test_recognition():
         except Exception:
             print('%s: unexpected exception occurred.' % case.name)
             raise
+    set_preferences(prec=None, spacer=None, unity=None, output=None)
