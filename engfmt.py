@@ -177,7 +177,7 @@ def is_str(obj):
     return isinstance(obj, string_types)
 
 def to_str(num):
-    return "{0:.{1}g}".format(num, Precision)
+    return "{0:.{1}g}".format(num, Precision+1)
 
 # _combine {{{2
 def _combine(mantissa, sf, units, spacer):

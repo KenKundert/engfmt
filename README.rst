@@ -27,7 +27,7 @@ format or in engineering format, and it may include the units. For example:
 
    >>> from engfmt import to_flt_quantity
    >>> to_flt_quantity(1420400000.0, 'Hz')
-   '1.42e+09Hz'
+   '1.4204e+09Hz'
 
    >>> from engfmt import to_number
    >>> to_number('1.4204GHz')
@@ -69,6 +69,10 @@ You can adjust some of the behavior of these functions on a global basis using
    '1.42 GHz'
    >>> to_eng_quantity('1.4204GHz', prec=4)
    '1.4204 GHz'
+
+Specifying *prec*=4 should give 5 digits of precision (you get one more digit of 
+precision that the number you specify for precision). Thus, the valid range for 
+*prec* is from 0 to around 12 to 14.
 
 Passing *None* as values in *set_preferences* returns the preferences to their 
 default values:
