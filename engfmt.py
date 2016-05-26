@@ -251,7 +251,8 @@ class Quantity:
                 if match:
                     self._value = None
                     self._mantissa = get_mant(match)
-                    self._scale_factor = get_sf(match)
+                    sf = get_sf(match)
+                    self._scale_factor = sf if sf != '_' else ''
                     self._units = get_units(match)
                     if self._units:
                         if units:
