@@ -51,7 +51,12 @@ The output of the *to_eng_number* and *to_eng_quantity* is always rounded to the
 desired precision, which can be specified as an argument to these functions.
 This differs from the *to_flt_number* and *to_flt_quantity* functions. They 
 attempt to retain the original format of the number if it is specified as 
-a string. In this way it retains its original precision.
+a string. In this way it retains its original precision. The underlying 
+assumption behind this difference is that engineering notation is generally used 
+when communicating with people, whereas floating point notation is used when 
+communicating with machines. People benefit from having a limited number of 
+digits in the numbers, whereas machines benefit from have full precision 
+numbers.
 
 You can adjust some of the behavior of these functions on a global basis using 
 *set_preferences*:
