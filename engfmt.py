@@ -404,6 +404,9 @@ def to_eng_number(value, units=None, prec=None):
 def to_flt_number(value, units=None):
     return Quantity(value, units).to_flt_number()
 
+def strip_units(value):
+    return Quantity(value).strip_units()
+
 # Text processing functions {{{1
 # All to engineering format {{{2
 def all_to_eng_fmt(text):

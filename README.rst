@@ -38,8 +38,14 @@ format or in engineering format, and it may include the units. For example:
    '1.4204e9'
 
    >>> from engfmt import to_eng_number
-   >>> to_eng_number('1.4204GHz')
+   >>> to_eng_number('1.4204e9Hz')
    '1.4204G'
+
+   >>> from engfmt import strip_units
+   >>> strip_units('1.4204GHz')
+   '1.4204G'
+   >>> strip_units('1.4204e9Hz')
+   '1.4204e9'
 
 The output of the *to_eng_number* and *to_eng_quantity* is always rounded to the 
 desired precision, which can be specified as an argument to these functions.
