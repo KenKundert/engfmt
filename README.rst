@@ -47,6 +47,9 @@ format or in engineering format, and it may include the units. For example:
    >>> strip_units('1.4204e9Hz')
    '1.4204e9'
 
+Notice that the output of *quanity* functions always include the units and the 
+output of *number* functions do not.
+
 The output of the *to_eng_number* and *to_eng_quantity* is always rounded to the 
 desired precision, which can be specified as an argument to these functions.
 This differs from the *to_flt_number* and *to_flt_quantity* functions. They 
@@ -70,18 +73,19 @@ You can adjust some of the behavior of these functions on a global basis using
    >>> to_eng_quantity('1.4204GHz', prec=4)
    '1.4204 GHz'
 
-Specifying *prec*=4 should give 5 digits of precision (you get one more digit of 
-precision that the number you specify for precision). Thus, the valid range for 
-*prec* is from 0 to around 12 to 14.
+Specifying *prec* to be 4 gives 5 digits of precision (you get one more digit 
+than the number you specify for precision). Thus, the valid range for *prec* is 
+from 0 to around 12 to 14 for double precision numbers.
 
-Passing *None* as values in *set_preferences* returns the preferences to their 
-default values:
+Passing *None* as a value in *set_preferences* returns that preference to its 
+default value:
 
 .. code-block:: python
 
    >>> set_preferences(prec=None, spacer=None)
    >>> to_eng_quantity('1.4204GHz')
    '1.4204GHz'
+
 
 Quantity Class
 --------------
@@ -126,6 +130,7 @@ a bit more flexible than the shortcut functions:
 
    >>> h_line.is_nan()
    False
+
 
 Exceptions
 ----------
