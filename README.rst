@@ -101,6 +101,9 @@ a bit more flexible than the shortcut functions:
    >>> str(h_line)
    '1.4204GHz'
 
+   >>> float(h_line)
+   1420405751.786
+
    >>> h_line.to_quantity()
    (1420405751.786, 'Hz')
 
@@ -130,6 +133,51 @@ a bit more flexible than the shortcut functions:
 
    >>> h_line.is_nan()
    False
+
+Quantities can be passed into the string *format* function:
+
+.. code-block:: python
+
+   >>> print('{}'.format(h_line))
+   1.4204GHz
+
+You can specify the precision as part of the format specification
+
+.. code-block:: python
+
+   >>> print('{:.6}'.format(h_line))
+   1.420406GHz
+
+The 'q' type specifier can be used to explicitly indicate both the number and 
+units are desired:
+
+.. code-block:: python
+
+   >>> print('{:.6q}'.format(h_line))
+   1.420406GHz
+
+Alternately, 'r' can be used to indicate just the number is desired:
+
+.. code-block:: python
+
+   >>> print('{:r}'.format(h_line))
+   1.4204G
+
+You can also use the string and floating point format type specifiers:
+
+.. code-block:: python
+
+   >>> print('{:f}'.format(h_line))
+   1420405751.786000
+
+   >>> print('{:e}'.format(h_line))
+   1.420406e+09
+
+   >>> print('{:g}'.format(h_line))
+   1.42041e+09
+
+   >>> print('{:s}'.format(h_line))
+   1.4204GHz
 
 
 Exceptions

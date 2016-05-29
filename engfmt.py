@@ -169,6 +169,8 @@ number_converters = [
     ]
 ]
 
+format_spec = re.compile(r'([<>]?)(\d*)(?:\.(\d+))?([qrseEfFgG]?)'.format(**locals()))
+
 # Utilities {{{1
 # is_str {{{2
 from six import string_types
@@ -333,6 +335,8 @@ class Quantity:
         # determine precision
         if prec is None:
             prec = Precision
+        else:
+            prec = int(prec)
         assert (prec >= 0)
 
         # check for infinities or NaN
@@ -385,6 +389,38 @@ class Quantity:
 
     def __str__(self):
         return self.to_eng_quantity()
+
+    def __format__(self, fmt):
+        """Convert quantity to string for Python string format function.
+
+        Supports the normal floating point and string format types as well
+        'q' and 'r'.  All will output the number using the SI scale factors, but
+        the 's' and 'q' types also include the units.
+
+        The format is specified using AW.PT where:
+        A is character and gives the alignment: either '', '>', or '<'
+        W is integer and gives the width
+        P is integer and gives the precision
+        T is  and gives the type: choose from q, r, s, e, D, f, F, g, G
+        """
+        match = format_spec.match(fmt)
+        if match:
+            align, width, prec, ftype = match.groups()
+            if ftype in 'qs':
+                value = self.to_eng_quantity(prec)
+                return '{0:{1}{2}s}'.format(value, align, width, value)
+            elif ftype == 'r':
+                value = self.to_eng_number(prec)
+                return '{0:{1}{2}s}'.format(value, align, width, value)
+            else:
+                value = self.to_number()
+                return '{0:{1}}'.format(value, fmt)
+        else:
+            return self.to_eng_quantity()
+
+    def __float__(self):
+        return self.to_number()
+
 
 # Shortcut functions {{{1
 def to_quantity(value, units=None):
