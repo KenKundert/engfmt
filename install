@@ -7,7 +7,7 @@
 #
 # Requires Python 2.6 or better or Python 3.2 or better.
 
-cmd=shlib
+cmd=engfmt
 pythons=(python)
     # Add the versions of python you would like to install to above
 

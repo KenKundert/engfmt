@@ -246,6 +246,13 @@ Alternately, 'r' can be used to indicate just the number is desired:
    >>> print('{:r}'.format(h_line))
    1.4204G
 
+Use 'u' to indicate that only the units are desired:
+
+.. code-block:: python
+
+   >>> print('{:u}'.format(h_line))
+   Hz
+
 You can also use the string and floating point format type specifiers:
 
 .. code-block:: python

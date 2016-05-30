@@ -183,7 +183,7 @@ number_converters = [
     ]
 ]
 
-format_spec = re.compile(r'([<>]?)(\d*)(?:\.(\d+))?([qrseEfFgG]?)'.format(**locals()))
+format_spec = re.compile(r'([<>]?)(\d*)(?:\.(\d+))?([qruseEfFgG]?)'.format(**locals()))
 
 # Utilities {{{1
 # is_str {{{2
@@ -413,8 +413,8 @@ class Quantity:
         """Convert quantity to string for Python string format function.
 
         Supports the normal floating point and string format types as well
-        'q' and 'r'.  All will output the number using the SI scale factors, but
-        the 's' and 'q' types also include the units.
+        'q', 'r' and 'u'.  All will output the number using the SI scale
+        factors, but the 's' and 'q' types also include the units.
 
         The format is specified using AW.PT where:
         A is character and gives the alignment: either '', '>', or '<'
@@ -427,10 +427,13 @@ class Quantity:
             align, width, prec, ftype = match.groups()
             if ftype in 'qs':
                 value = self.to_eng_quantity(prec)
-                return '{0:{1}{2}s}'.format(value, align, width, value)
+                return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype == 'r':
                 value = self.to_eng_number(prec)
-                return '{0:{1}{2}s}'.format(value, align, width, value)
+                return '{0:{1}{2}s}'.format(value, align, width)
+            elif ftype == 'u':
+                value = self._units
+                return '{0:{1}{2}s}'.format(value, align, width)
             else:
                 value = self.to_number()
                 return '{0:{1}}'.format(value, fmt)
