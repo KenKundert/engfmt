@@ -154,7 +154,7 @@ Plank's constant:
 .. code-block:: python
 
    >>> plank = Quantity('h')
-   >>> print(str(plank))
+   >>> print(plank)
    662.61e-36J-s
 
 Boltzmann's constant:
@@ -162,7 +162,7 @@ Boltzmann's constant:
 .. code-block:: python
 
    >>> boltz = Quantity('k')
-   >>> print(str(boltz))
+   >>> print(boltz)
    13.806e-24J/K
 
 Elementary charge:
@@ -170,7 +170,7 @@ Elementary charge:
 .. code-block:: python
 
    >>> q = Quantity('q')
-   >>> print(str(q))
+   >>> print(q)
    160.22e-21C
 
 Speed of light:
@@ -178,7 +178,7 @@ Speed of light:
 .. code-block:: python
 
    >>> c = Quantity('c')
-   >>> print(str(c))
+   >>> print(c)
    299.79Mm/s
 
 Zero degrees Celsius in Kelvin:
@@ -186,7 +186,7 @@ Zero degrees Celsius in Kelvin:
 .. code-block:: python
 
    >>> zeroC = Quantity('C0')
-   >>> print(str(zeroC))
+   >>> print(zeroC)
    273.15K
 
 Permittivity of free space:
@@ -194,7 +194,7 @@ Permittivity of free space:
 .. code-block:: python
 
    >>> eps0 = Quantity('eps0')
-   >>> print(str(eps0))
+   >>> print(eps0)
    8.8542pF/m
 
 Permeability of free space:
@@ -202,7 +202,7 @@ Permeability of free space:
 .. code-block:: python
 
    >>> mu0 = Quantity('mu0')
-   >>> print(str(mu0))
+   >>> print(mu0)
    1.2566uH/m
 
 Characteristic impedance of free space:
@@ -210,7 +210,7 @@ Characteristic impedance of free space:
 .. code-block:: python
 
    >>> Z0 = Quantity('Z0')
-   >>> print(str(Z0))
+   >>> print(Z0)
    376.73Ohms
 
 
@@ -310,15 +310,19 @@ Python namespace. For example:
 
 .. code-block:: python
 
-    add_to_namespace('''
-        Fref = 156MHz  -- Reference frequency
-        Kdet = 88.3uA  -- Gain of phase detector (Imax)
-        Kvco = 9.07GHz/V  -- Gain of VCO
-    ''')
-    print('{}\n{}\n{}'.format(Fref, Kdet, Kvco)
-    156MHz
-    88.3uA
-    9.07GHz/V
+   >>> from engfmt import add_to_namespace
+
+   >>> physical_constants = '''
+   ...     Fref = 156MHz  -- Reference frequency
+   ...     Kdet = 88.3uA  -- Gain of phase detector (Imax)
+   ...     Kvco = 9.07GHz/V  -- Gain of VCO
+   ... '''
+   >>> add_to_namespace(physical_constants)
+
+   >>> print('{}\n{}\n{}'.format(Fref, Kdet, Kvco))
+   156MHz
+   88.3uA
+   9.07GHz/V
 
 Any number of quantities may be given, with each quantity given on its own line.  
 The identifier given to the left '=' is the name of the variable in the local 
