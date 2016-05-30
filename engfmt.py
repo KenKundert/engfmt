@@ -540,6 +540,8 @@ def add_to_namespace(quantities):
             name, value, desc = match.groups()
             if not value:
                 continue
+            if not name:
+                raise ValueError('{}: no variable name given.'.format(line))
             quantity = Quantity(value)
             namespace[name] = quantity
         else:

@@ -281,7 +281,7 @@ a number:
    >>> try:
    ...     value, units = to_quantity('xxx')
    ... except ValueError as err:
-   ...     print(str(err))
+   ...     print(err)
    xxx: not a valid number.
 
 
@@ -313,13 +313,13 @@ Python namespace. For example:
    >>> from engfmt import add_to_namespace
 
    >>> design_parameters = '''
-   ...     Fref = 156MHz  -- Reference frequency
-   ...     Kdet = 88.3uA  -- Gain of phase detector (Imax)
-   ...     Kvco = 9.07GHz/V  -- Gain of VCO
+   ...     Fref = 156 MHz  -- Reference frequency
+   ...     Kdet = 88.3 uA  -- Gain of phase detector (Imax)
+   ...     Kvco = 9.07 GHz/V  -- Gain of VCO
    ... '''
    >>> add_to_namespace(design_parameters)
 
-   >>> print('{}\n{}\n{}'.format(Fref, Kdet, Kvco))
+   >>> print(Fref, Kdet, Kvco, sep='\n')
    156MHz
    88.3uA
    9.07GHz/V
