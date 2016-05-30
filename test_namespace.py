@@ -33,6 +33,8 @@ def test_namespace():
         FcorRef = 0_Hz  -- Freq. reference flicker noise corner frequency
         FmaskLFcor = 12kHz  -- Jitter generation mask low frequency corner
         FmaskHFbound = 5MHz  -- Jitter generation mask high frequency bound
+
+        -- The remainder are built in constants
         plank = h  -- Plank's constant
         boltz = k  -- Boltzmann's constant
         ec = q  -- Elementary charge
