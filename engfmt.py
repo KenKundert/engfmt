@@ -38,7 +38,22 @@ DEFAULT_SPACER = ''
 DEFAULT_UNITY_SCALE_FACTOR = ''
 DEFAULT_OUTPUT_SCALE_FACTORS = 'TGMkmunpfa'
 
+import math
+CONSTANTS = {
+    'h': (6.62606957e-34, 'J-s'),      # Plank's constant
+    'k': (1.3806488e-23, 'J/K'),       # Boltzmann's constant
+    'q': (1.602176565e-19, 'C'),       # Elementary charge
+    'c': (2.99792458e8, 'm/s'),        # Speed of light
+    'C0': (273.15, 'K'),               # Zero degrees Celsius in Kelvin
+    'eps0': (8.854187817e-12, 'F/m'),  # Permittivity of free space
+    'mu0': (4e-7*math.pi, 'H/m'),      # Permeability of free space
+    'Z0': (376.730313461, 'Ohms'),     # Characteristic impedance of free space
+}
+
+
 # Constants {{{1
+__version__ = '0.6.0'
+
 MAPPINGS = {
     'Y' : ('e24',  1e24 ),
     'Z' : ('e21',  1e21 ),
@@ -67,18 +82,6 @@ BIG_SCALE_FACTORS = 'kMGTPEZY'
     #
 SMALL_SCALE_FACTORS = 'munpfazy'
     # these must be given in order, one for every three decades
-
-import math
-CONSTANTS = {
-    'h': (6.62606957e-34, 'J-s'),      # Plank's constant
-    'k': (1.3806488e-23, 'J/K'),       # Boltzmann's constant
-    'q': (1.602176565e-19, 'C'),       # Elementary charge
-    'c': (2.99792458e8, 'm/s'),        # Speed of light
-    'C0': (273.15, 'K'),               # Zero degrees Celsius in Kelvin
-    'eps0': (8.854187817e-12, 'F/m'),  # Permittivity of free space
-    'mu0': (4e-7*math.pi, 'H/m'),      # Permeability of free space
-    'Z0': (376.730313461, 'Ohms'),     # Characteristic impedance of free space
-}
 
 # Pattern Definitions {{{1
 # Build regular expressions used to recognize quantities
