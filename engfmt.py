@@ -60,11 +60,25 @@ MAPPINGS = {
     'z' : ('e-21', 1e-21),
     'y' : ('e-24', 1e-24),
 }
+
 BIG_SCALE_FACTORS = 'kMGTPEZY'
     # these must be given in order, one for every three decades
     # use k rather than K, because K looks like a temperature when used alone
+    #
 SMALL_SCALE_FACTORS = 'munpfazy'
     # these must be given in order, one for every three decades
+
+import math
+CONSTANTS = {
+    'h': (6.62606957e-34, 'J-s'),      # Plank's constant
+    'k': (1.3806488e-23, 'J/K'),       # Boltzmann's constant
+    'q': (1.602176565e-19, 'C'),       # Elementary charge
+    'c': (2.99792458e8, 'm/s'),        # Speed of light
+    'C0': (273.15, 'K'),               # Zero degrees Celsius in Kelvin
+    'eps0': (8.854187817e-12, 'F/m'),  # Permittivity of free space
+    'mu0': (4e-7*math.pi, 'H/m'),      # Permeability of free space
+    'Z0': (376.730313461, 'Ohms'),     # Characteristic impedance of free space
+}
 
 # Pattern Definitions {{{1
 # Build regular expressions used to recognize quantities
@@ -212,10 +226,12 @@ def set_preferences(prec=False, spacer=False, unity=False, output=False):
     """Set Global Preferences
     prec (int): precision in digits where 0 corresponds to 1 digit, must be
         nonnegative.
-    spacer 9str): may be '' or ' ', use the latter if you prefer a space between
-        the number and the units.
+    spacer (str): may be '' or ' ', use the latter if you prefer a space between
+        the number and the units. Generally using ' ' makes numbers easier to
+        use, particularly with complex units, and using '' is easier to parse.
     unity (str): the scale factor for unity, generally '' or '_'.
-    output (str): which scale factors to output
+    output (str): which scale factors to output, generally one would only use
+        familiar scale factors.
 
     Any value not passed in are left alone. Pass in None to reset it to its
     default value.
@@ -262,7 +278,10 @@ class Quantity:
                     else:
                         self._units = units
                     return
-            raise ValueError('%s: not a valid number.' % value)
+            try:
+                self._value, self._units = CONSTANTS[value]
+            except KeyError:
+                raise ValueError('%s: not a valid number.' % value)
 
     def is_infinite(self):
         value = self._mantissa if self._value is None else str(self._value)
@@ -489,3 +508,33 @@ def all_from_eng_fmt(text):
         out.append(text[start:end] + number)
         start = match.end(0)
     return ''.join(out) + text[start:]
+
+# Add to namespace {{{1
+assignment = re.compile(
+    r'\A\s*(?:(\w+)\s*=\s*)?(.*?)(?:\s*--\s*(.*?)\s*)?\Z'
+)
+
+def add_to_namespace(quantities):
+    """ Add to Namespace
+
+    Takes a string that contains quantity definitions and places those
+    quantities in the calling namespace. The string may contain one definition per line, of the form:
+        <name> = <value> -- <description>
+    The description is discarded.
+    """
+
+    # Access the namespace of the calling frame
+    import inspect
+    frame = inspect.stack()[1][0]
+    namespace = frame.f_globals
+
+    for line in quantities.splitlines():
+        match = assignment.match(line)
+        if match:
+            name, value, desc = match.groups()
+            if not value:
+                continue
+            quantity = Quantity(value)
+            namespace[name] = quantity
+        else:
+            raise ValueError('{}: not a valid number.'.format(line))

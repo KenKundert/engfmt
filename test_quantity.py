@@ -219,6 +219,7 @@ test_cases = [
 
 names = set()
 def test_number_recognition():
+    set_preferences(prec=None, spacer=None, unity=None, output=None)
     for case in test_cases:
         assert case.name not in names
         names.add(case.name)

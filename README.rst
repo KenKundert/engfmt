@@ -10,6 +10,10 @@ SI scale factors to indicate the magnitude of the number. For example:
 
 The pairing of a number and units is referred to as a quantity.
 
+
+Shortcut Functions
+------------------
+
 Generally one uses the shortcut functions to convert numbers to and from 
 engineering format. All of these functions take a value and units. The value may 
 be a string or a real number. If it is a string it may be given in traditional 
@@ -60,6 +64,10 @@ when communicating with people, whereas floating point notation is used when
 communicating with machines. People benefit from having a limited number of 
 digits in the numbers, whereas machines benefit from have full precision 
 numbers.
+
+
+Preferences
+-----------
 
 You can adjust some of the behavior of these functions on a global basis using 
 *set_preferences*:
@@ -133,6 +141,81 @@ a bit more flexible than the shortcut functions:
 
    >>> h_line.is_nan()
    False
+
+
+Physical Constants
+------------------
+
+The Quantity class also supports a small number of physical constants (you can 
+modify the source code if you would like to add more).
+
+Plank's constant:
+
+.. code-block:: python
+
+   >>> plank = Quantity('h')
+   >>> print(str(plank))
+   662.61e-36J-s
+
+Boltzmann's constant:
+
+.. code-block:: python
+
+   >>> boltz = Quantity('k')
+   >>> print(str(boltz))
+   13.806e-24J/K
+
+Elementary charge:
+
+.. code-block:: python
+
+   >>> q = Quantity('q')
+   >>> print(str(q))
+   160.22e-21C
+
+Speed of light:
+
+.. code-block:: python
+
+   >>> c = Quantity('c')
+   >>> print(str(c))
+   299.79Mm/s
+
+Zero degrees Celsius in Kelvin:
+
+.. code-block:: python
+
+   >>> zeroC = Quantity('C0')
+   >>> print(str(zeroC))
+   273.15K
+
+Permittivity of free space:
+
+.. code-block:: python
+
+   >>> eps0 = Quantity('eps0')
+   >>> print(str(eps0))
+   8.8542pF/m
+
+Permeability of free space:
+
+.. code-block:: python
+
+   >>> mu0 = Quantity('mu0')
+   >>> print(str(mu0))
+   1.2566uH/m
+
+Characteristic impedance of free space:
+
+.. code-block:: python
+
+   >>> Z0 = Quantity('Z0')
+   >>> print(str(Z0))
+   376.73Ohms
+
+
+String Formatting
+-----------------
 
 Quantities can be passed into the string *format* function:
 
@@ -209,6 +292,31 @@ and from engineering notation:
 
    >>> all_from_eng_fmt('The frequency of the hydrogen line is 1.4204GHz.')
    'The frequency of the hydrogen line is 1.4204e9Hz.'
+
+
+Add to Namespace
+----------------
+
+It is possible to put a collection of quantities in a text string and then use 
+the *add_to_namespace* function to parse the quantities and add them to the 
+Python namespace. For example:
+
+.. code-block:: python
+
+    add_to_namespace('''
+        Fref = 156MHz  -- Reference frequency
+        Kdet = 88.3uA  -- Gain of phase detector (Imax)
+        Kvco = 9.07GHz/V  -- Gain of VCO
+    ''')
+    print('{}\n{}\n{}'.format(Fref, Kdet, Kvco)
+    156MHz
+    88.3uA
+    9.07GHz/V
+
+Any number of quantities may be given, with each quantity given on its own line.  
+The identifier given to the left '=' is the name of the variable in the local 
+namespace that is used to hold the quantity. The text after the '--' is ignored 
+and is generally used as a description of the quantity.
 
 
 Installation

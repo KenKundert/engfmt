@@ -1,10 +1,11 @@
-from engfmt import Quantity
+from engfmt import Quantity, set_preferences
+set_preferences(spacer=' ')
 
 def test_format():
     q=Quantity('1420.405751786 MHz')
-    assert '{}'.format(q) == '1.4204GHz'
-    assert '{:.8q}'.format(q) == '1.42040575GHz'
-    assert '{:.8}'.format(q) == '1.42040575GHz'
+    assert '{}'.format(q) == '1.4204 GHz'
+    assert '{:.8q}'.format(q) == '1.42040575 GHz'
+    assert '{:.8}'.format(q) == '1.42040575 GHz'
     assert '{:r}'.format(q) == '1.4204G'
     assert '{:f}'.format(q) == '1420405751.786000'
     assert '{:e}'.format(q) == '1.420406e+09'
