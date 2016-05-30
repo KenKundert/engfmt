@@ -22,7 +22,7 @@ setup(
         'six',
     ],
     keywords=[
-        'quantities',
+        'quantities', 'engfmt', 'engineering', 'notation', 'SI', 'scale factors'
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
