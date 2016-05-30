@@ -52,7 +52,7 @@ CONSTANTS = {
 
 
 # Constants {{{1
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 MAPPINGS = {
     'Y' : ('e24',  1e24 ),
