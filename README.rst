@@ -312,12 +312,12 @@ Python namespace. For example:
 
    >>> from engfmt import add_to_namespace
 
-   >>> physical_constants = '''
+   >>> design_parameters = '''
    ...     Fref = 156MHz  -- Reference frequency
    ...     Kdet = 88.3uA  -- Gain of phase detector (Imax)
    ...     Kvco = 9.07GHz/V  -- Gain of VCO
    ... '''
-   >>> add_to_namespace(physical_constants)
+   >>> add_to_namespace(design_parameters)
 
    >>> print('{}\n{}\n{}'.format(Fref, Kdet, Kvco))
    156MHz
