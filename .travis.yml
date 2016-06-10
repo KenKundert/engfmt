@@ -10,7 +10,7 @@ install:
   - pip install .
   - pip install coveralls
 script:
-  - py.test
+  - coverage run --source=engfmt setup.py test
 deploy:
     provider: pypi
     user: messenger
