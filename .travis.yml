@@ -8,12 +8,13 @@ python:
   - "nightly"
 install:
   - pip install .
-script: 
+  - pip install coveralls
+script:
   - py.test
 deploy:
     provider: pypi
     user: messenger
     on:
         tags: true
-
-
+after_success:
+    coveralls

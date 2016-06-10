@@ -18,9 +18,8 @@ setup(
     license='GPLv3+',
     zip_safe=True,
     py_modules=['engfmt'],
-    install_requires=[
-        'six',
-    ],
+    install_requires=['six', 'pytest-runner'],
+    tests_require=['pytest'],
     keywords=[
         'quantities', 'engfmt', 'engineering', 'notation', 'SI', 'scale factors'
     ],

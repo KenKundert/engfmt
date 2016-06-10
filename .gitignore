@@ -3,6 +3,9 @@
 test_key/random_seed
 install.out
 .cache
+.coverage
+htmlcov
+.eggs
 
 # Packages
 *.egg
