@@ -133,8 +133,16 @@ a bit more flexible than the shortcut functions:
    >>> h_line.strip_units()
    '1420.405751786M'
 
-   >>> h_line.units()
+   >>> h_line.units
    'Hz'
+
+   >>> h_line.add_name('Fhy')
+   >>> h_line.name
+   'Fhy'
+
+   >>> h_line.add_desc('frequency of hydrogen line')
+   >>> h_line.desc
+   'frequency of hydrogen line'
 
    >>> h_line.is_infinite()
    False
@@ -268,6 +276,28 @@ You can also use the string and floating point format type specifiers:
 
    >>> print('{:s}'.format(h_line))
    1.4204GHz
+
+It is also possible to add a name and perhaps a description to the quantity, and 
+special format codes are available for printing those as well:
+
+.. code-block:: python
+
+   >>> h_line.add_name('Fhy')
+   >>> h_line.add_desc('frequency of hydrogen line')
+   >>> print('{:n}'.format(h_line))
+   Fhy
+
+   >>> print('{:d}'.format(h_line))
+   frequency of hydrogen line
+
+   >>> print('{:Q}'.format(h_line))
+   Fhy = 1.4204GHz
+
+   >>> print('{:R}'.format(h_line))
+   Fhy = 1.4204G
+
+   >>> print('{0:Q} ({0:d})'.format(h_line))
+   Fhy = 1.4204GHz (frequency of hydrogen line)
 
 
 Exceptions

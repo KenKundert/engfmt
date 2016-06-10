@@ -29,6 +29,7 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
 # Imports {{{1
+__version__ = '0.6.2'
 import re
 
 # Parameters {{{1
@@ -37,6 +38,11 @@ DEFAULT_PRECISION = 4
 DEFAULT_SPACER = ''
 DEFAULT_UNITY_SCALE_FACTOR = ''
 DEFAULT_OUTPUT_SCALE_FACTORS = 'TGMkmunpfa'
+DEFAULT_IGNORE_SCALE_FACTORS = False
+DEFAULT_ASSIGNMENT_FORMATTER = '{n} = {v}'
+DEFAULT_ASSIGNMENT_RECOGNIZER = (
+    r'\A\s*(?:(\w+)\s*=\s*)?(.*?)(?:\s*--\s*(.*?)\s*)?\Z'
+)
 
 import math
 CONSTANTS = {
@@ -52,8 +58,6 @@ CONSTANTS = {
 
 
 # Constants {{{1
-__version__ = '0.6.2'
-
 MAPPINGS = {
     'Y' : ('e24',  1e24 ),
     'Z' : ('e21',  1e21 ),
@@ -177,7 +181,7 @@ simple_nan = (
     lambda match: ''
 )
 
-number_converters = [
+all_number_converters = [
     (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
     for pattern, get_mant, get_sf, get_units  in [
         number_with_exponent, number_with_scale_factor, simple_number,
@@ -186,7 +190,16 @@ number_converters = [
     ]
 ]
 
-format_spec = re.compile(r'([<>]?)(\d*)(?:\.(\d+))?([qruseEfFgG]?)'.format(**locals()))
+sf_free_number_converters = [
+    (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
+    for pattern, get_mant, get_sf, get_units  in [
+        number_with_exponent, simple_number,
+        currency_with_exponent, simple_currency,
+        nan_with_units, currency_nan, simple_nan,
+    ]
+]
+
+format_spec = re.compile(r'([<>]?)(\d*)(?:\.(\d+))?([qruseEfFgGdnQR]?)'.format(**locals()))
 
 # Utilities {{{1
 # is_str {{{2
@@ -224,9 +237,16 @@ Precision = DEFAULT_PRECISION
 Spacer = DEFAULT_SPACER
 UnityScaleFactor = DEFAULT_UNITY_SCALE_FACTOR
 OutputScaleFactors = DEFAULT_OUTPUT_SCALE_FACTORS
+IgnoreScaleFactors = DEFAULT_IGNORE_SCALE_FACTORS
+AssignmentFormatter = DEFAULT_ASSIGNMENT_FORMATTER
+AssignmentRecognizer = re.compile(DEFAULT_ASSIGNMENT_RECOGNIZER)
 
-def set_preferences(prec=False, spacer=False, unity=False, output=False):
+def set_preferences(
+        prec=False, spacer=False, unity=False, output=False, ignore_sf=False,
+        assign_fmt=False, assign_rec=False
+):
     """Set Global Preferences
+
     prec (int): precision in digits where 0 corresponds to 1 digit, must be
         nonnegative.
     spacer (str): may be '' or ' ', use the latter if you prefer a space between
@@ -235,23 +255,47 @@ def set_preferences(prec=False, spacer=False, unity=False, output=False):
     unity (str): the scale factor for unity, generally '' or '_'.
     output (str): which scale factors to output, generally one would only use
         familiar scale factors.
+    ignore_sf (bool): whether scale factors should be ignored by default.
+    assign_fmt (str): format string for an assignment. Will be passed through
+        .format function. Format string takes three possible arguments named n,
+        q, and d for the name, value and description.  The default is '{n} = {v}'
+    assign_rec (str): regular expression used to recognize an assignment. Used
+        in add_to_namespace(). Default recognizes the form
+            "Temp = 300_K -- Temperature".
 
     Any value not passed in are left alone. Pass in None to reset it to its
     default value.
     """
     global Precision, Spacer, UnityScaleFactor, OutputScaleFactors
+    global AssignmentFormatter, AssignmentRecognizer
     if prec is not False:
         Precision = prec if prec is not None else DEFAULT_PRECISION
     if spacer is not False:
         Spacer = spacer if spacer is not None else DEFAULT_SPACER
     if unity is not False:
-        UnityScaleFactor = unity if unity is not None else DEFAULT_UNITY_SCALE_FACTOR
+        UnityScaleFactor = (
+            unity if unity is not None else DEFAULT_UNITY_SCALE_FACTOR
+        )
     if output is not False:
-        OutputScaleFactors = output if output is not None else DEFAULT_OUTPUT_SCALE_FACTORS
+        OutputScaleFactors = (
+            output if output is not None else DEFAULT_OUTPUT_SCALE_FACTORS
+        )
+    if ignore_sf is not False:
+        IgnoreScaleFactors = (
+            ignore_sf if ignore_sf is not None else DEFAULT_IGNORE_SCALE_FACTORS
+        )
+    if assign_fmt is not False:
+        AssignmentFormatter = (
+            assign_fmt if assign_fmt is not None else DEFAULT_ASSIGNMENT_FORMATTER
+        )
+    if assign_rec is not False:
+        AssignmentRecognizer = re.compile(
+            assign_rec if assign_rec is not None else DEFAULT_ASSIGNMENT_RECOGNIZER
+        )
 
 # Quantity class {{{1
 class Quantity:
-    def __init__(self, value, units=None):
+    def __init__(self, value, units=None, ignore_sf=IgnoreScaleFactors):
         """Physical Quantity
         A real quantity with units.
 
@@ -263,8 +307,13 @@ class Quantity:
         if units is None:
             units = ''
         self._value = value
-        self._units = units
+        self.units = units
+
         if is_str(value):
+            if ignore_sf:
+                number_converters = sf_free_number_converters
+            else:
+                number_converters = all_number_converters
             # if we get a string, keep all the pieces so we can reconstruct it
             # exactly as it was given.
             for pattern, get_mant, get_sf, get_units in number_converters:
@@ -274,15 +323,15 @@ class Quantity:
                     self._mantissa = get_mant(match)
                     sf = get_sf(match)
                     self._scale_factor = sf if sf != '_' else ''
-                    self._units = get_units(match)
-                    if self._units:
+                    self.units = get_units(match)
+                    if self.units:
                         if units:
-                            assert units == self._units
+                            assert units == self.units
                     else:
-                        self._units = units
+                        self.units = units
                     return
             try:
-                self._value, self._units = CONSTANTS[value]
+                self._value, self.units = CONSTANTS[value]
             except KeyError:
                 raise ValueError('%s: not a valid number.' % value)
 
@@ -294,9 +343,13 @@ class Quantity:
         value = self._mantissa if self._value is None else str(self._value)
         return value.lower() in ['nan', '-nan', '+nan']
 
-    def units(self):
-        """Returns the units."""
-        return self._units
+    def add_name(self, name):
+        """Add a name."""
+        self.name = name
+
+    def add_desc(self, desc):
+        """Add a description."""
+        self.desc = desc
 
     def strip_units(self):
         """Returns the value as a string in the originally given notation.
@@ -335,20 +388,20 @@ class Quantity:
     def to_eng_number(self, prec=None):
         """Renders the value as a string in engineering notation."""
         # this is a bit of a hack, temporarily remove the units
-        units = self.units()
-        self._units = None
+        units = self.units
+        self.units = None
         eng_number = self.to_eng_quantity(prec)
-        self._units = units
+        self.units = units
         return eng_number
 
     def to_quantity(self):
         """Returns a tuple that contains the value as a float and the units."""
-        return self.to_number(), self.units()
+        return self.to_number(), self.units
 
     def to_flt_quantity(self):
         """Renders the value and units as a string in floating point notation."""
         number = self.to_flt_number()
-        units = self.units()
+        units = self.units
         return _combine(number, '', units, Spacer)
 
     def to_eng_quantity(self, prec=None):
@@ -363,11 +416,11 @@ class Quantity:
 
         # check for infinities or NaN
         if self.is_infinite() or self.is_nan():
-            return _combine(self.strip_units(), '', self.units(), ' ')
+            return _combine(self.strip_units(), '', self.units, ' ')
 
         # convert into scientific notation with proper precision
         value = self.to_number()
-        units = self.units()
+        units = self.units
         number = "%.*e" % (prec, value)
         mantissa, exp = number.split("e")
         exp = int(exp)
@@ -423,7 +476,18 @@ class Quantity:
         A is character and gives the alignment: either '', '>', or '<'
         W is integer and gives the width
         P is integer and gives the precision
-        T is  and gives the type: choose from q, r, s, e, D, f, F, g, G
+        T is  and gives the type: choose from q, r, s, e, f, F, g, G, u, n, ...
+           q = quantity (1.4204GHz)
+           r = real (1.4204G)
+           s = string (1.4204GHz)
+           e = exponential form (1.4204e9)
+           f, F = float (1420400000.000000)
+           g, G = float (1.4204e+09)
+           u = units (Hz)
+           n = name (f)
+           d = description (hydrogen line)
+           Q = name and quantity (f = 1.4204GHz)
+           R = name and real (f = 1.4204G)
         """
         match = format_spec.match(fmt)
         if match:
@@ -435,7 +499,27 @@ class Quantity:
                 value = self.to_eng_number(prec)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype == 'u':
-                value = self._units
+                value = self.units
+                return '{0:{1}{2}s}'.format(value, align, width)
+            elif ftype == 'n':
+                value = getattr(self, 'name', '')
+                return '{0:{1}{2}s}'.format(value, align, width)
+            elif ftype == 'd':
+                value = getattr(self, 'desc', '')
+                return '{0:{1}{2}s}'.format(value, align, width)
+            elif ftype in 'Q':
+                name = getattr(self, 'name', '')
+                desc = getattr(self, 'desc', '')
+                value = self.to_eng_quantity(prec)
+                if name:
+                    value = AssignmentFormatter.format(n=name, v=value, d=desc)
+                return '{0:{1}{2}s}'.format(value, align, width)
+            elif ftype in 'R':
+                name = getattr(self, 'name', '')
+                desc = getattr(self, 'desc', '')
+                value = self.to_eng_number(prec)
+                if name:
+                    value = AssignmentFormatter.format(n=name, v=value, d=desc)
                 return '{0:{1}{2}s}'.format(value, align, width)
             else:
                 value = self.to_number()
@@ -543,6 +627,8 @@ def add_to_namespace(quantities):
             if not name:
                 raise ValueError('{}: no variable name given.'.format(line))
             quantity = Quantity(value)
+            quantity.add_name(name)
+            quantity.add_desc(desc)
             namespace[name] = quantity
         else:
             raise ValueError('{}: not a valid number.'.format(line))
