@@ -363,7 +363,7 @@ and is generally used as a description of the quantity.
 Installation
 ------------
 
-Use 'pip install engfmt' to install. Requires Python2.7 or Python3.2 or better.
+Use 'pip install engfmt' to install. Requires Python2.7 or Python3.3 or better.
 
 .. image:: https://travis-ci.org/KenKundert/engfmt.svg?branch=master
     :target: https://travis-ci.org/KenKundert/engfmt
