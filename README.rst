@@ -452,10 +452,13 @@ a description of the quantity.
 Installation
 ------------
 
-Use 'pip install engfmt' to install. Requires Python2.7 or Python3.2 or better.
+Use 'pip install engfmt' to install. Requires Python2.7 or Python3.3 or better.
 
 .. image:: https://travis-ci.org/KenKundert/engfmt.svg?branch=master
     :target: https://travis-ci.org/KenKundert/engfmt
+
+.. image:: https://coveralls.io/repos/github/KenKundert/engfmt/badge.svg?branch=master
+    :target: https://coveralls.io/github/KenKundert/engfmt?branch=master
 
 
 Testing
