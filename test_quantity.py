@@ -232,7 +232,7 @@ def test_number_recognition():
             if case.prefs:
                 set_preferences(**case.prefs)
             q = Quantity(case.text)
-            assert ((q.to_str_strip(), q.units) == case.raw), case.name
+            assert ((q.to_unitless_str(), q.units) == case.raw), case.name
             assert (str(q) == case.formatted), case.name
             # assure that the output value can be read as an input
             Quantity(str(q))

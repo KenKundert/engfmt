@@ -71,7 +71,7 @@ From a quantity object, you can generate any representation:
     >>> h_line.to_tuple()
     (1420405751.786, 'Hz')
 
-    >>> h_line.to_text()
+    >>> h_line.to_eng()
     '1.4204GHz'
 
     >>> h_line.to_str()
@@ -82,10 +82,10 @@ You can also access the value without the units::
     >>> h_line.to_float()
     1420405751.786
 
-    >>> h_line.to_text_strip()
+    >>> h_line.to_unitless_eng()
     '1.4204G'
 
-    >>> h_line.to_str_strip()
+    >>> h_line.to_unitless_str()
     '1420.405751786e6'
 
 Or you can access just the units::
@@ -105,42 +105,42 @@ format or in engineering format, and it may include the units.  For example:
 
 .. code-block:: python
 
-   >>> from engfmt import to_tuple
-   >>> to_tuple('1.4204GHz')
+   >>> from engfmt import quant_to_tuple
+   >>> quant_to_tuple('1.4204GHz')
    (1420400000.0, 'Hz')
 
-   >>> from engfmt import to_text
-   >>> to_text(1420400000.0, 'Hz')
+   >>> from engfmt import quant_to_eng
+   >>> quant_to_eng(1420400000.0, 'Hz')
    '1.4204GHz'
 
-   >>> from engfmt import to_str
-   >>> to_str(1420400000.0, 'Hz')
+   >>> from engfmt import quant_to_str
+   >>> quant_to_str(1420400000.0, 'Hz')
    '1.4204e+09Hz'
 
-   >>> from engfmt import to_float
-   >>> to_float('1.4204GHz')
+   >>> from engfmt import quant_to_float
+   >>> quant_to_float('1.4204GHz')
    1420400000.0
 
-   >>> from engfmt import to_str_strip
-   >>> to_str_strip('1.4204GHz')
+   >>> from engfmt import quant_to_unitless_str
+   >>> quant_to_unitless_str('1.4204GHz')
    '1.4204e9'
 
-   >>> from engfmt import to_text_strip
-   >>> to_text_strip('1.4204e9Hz')
+   >>> from engfmt import quant_to_unitless_eng
+   >>> quant_to_unitless_eng('1.4204e9Hz')
    '1.4204G'
 
-   >>> from engfmt import strip
-   >>> strip('1.4204GHz')
+   >>> from engfmt import quant_strip
+   >>> quant_strip('1.4204GHz')
    '1.4204G'
-   >>> strip('1.4204e9Hz')
+   >>> quant_strip('1.4204e9Hz')
    '1.4204e9'
 
 Notice that the output of base functions always include the units and the output 
-of *_strip* functions do not.
+of *unitless* functions do not.
 
-The output of the *to_text_strip* and *to_text* is always rounded to the 
+The output of the *to_unitless_eng* and *to_eng* is always rounded to the 
 desired precision, which can be specified as an argument to these functions.
-This differs from the *to_str_strip* and *to_str* functions. They attempt to 
+This differs from the *to_unitless_str* and *to_str* functions. They attempt to 
 retain the original format of the number if it is specified as a string. In this 
 way it retains its original precision. The underlying assumption behind this 
 difference is that engineering notation is generally used when communicating 
@@ -159,9 +159,9 @@ You can adjust some of the behavior of these functions on a global basis using
 
    >>> from engfmt import set_preferences
    >>> set_preferences(hprec=2, spacer=' ')
-   >>> to_text('1.4204GHz')
+   >>> quant_to_eng('1.4204GHz')
    '1.42 GHz'
-   >>> to_text('1.4204GHz', prec=4)
+   >>> quant_to_eng('1.4204GHz', prec=4)
    '1.4204 GHz'
 
 Specifying *hprec* to be 4 gives 5 digits of precision (you get one more digit 
@@ -174,7 +174,7 @@ default value:
 .. code-block:: python
 
    >>> set_preferences(hprec=None, spacer=None)
-   >>> to_text('1.4204GHz')
+   >>> quant_to_eng('1.4204GHz')
    '1.4204GHz'
 
 
@@ -198,7 +198,7 @@ engfmt package. It is more flexible than the shortcut functions:
    >>> h_line.to_tuple()
    (1420405751.786, 'Hz')
 
-   >>> h_line.to_text(7)
+   >>> h_line.to_eng(7)
    '1.4204058GHz'
 
    >>> h_line.to_str()
@@ -207,10 +207,10 @@ engfmt package. It is more flexible than the shortcut functions:
    >>> h_line.to_float()
    1420405751.786
 
-   >>> h_line.to_text_strip(4)
+   >>> h_line.to_unitless_eng(4)
    '1.4204G'
 
-   >>> h_line.to_str_strip()
+   >>> h_line.to_unitless_str()
    '1420.405751786e6'
 
    >>> h_line.strip()
@@ -395,7 +395,7 @@ a number:
 .. code-block:: python
 
    >>> try:
-   ...     value, units = to_tuple('xxx')
+   ...     value, units = quant_to_tuple('xxx')
    ... except ValueError as err:
    ...     print(err)
    xxx: not a valid number.
@@ -444,6 +444,37 @@ Any number of quantities may be given, with each quantity given on its own line.
 The identifier given to the left '=' is the name of the variable in the local 
 namespace that is used to hold the quantity. The text after the '--' is used as 
 a description of the quantity.
+
+
+Scale Factors and Units
+-----------------------
+
+By default, *engfmt* treats both the scale factor and the units as being 
+optional. With the scale factor being optional, the meaning of some 
+specifications can be ambiguous. For example, '1m' may represent 1 milli or it 
+may represent 1 meter.  Similarly, '1meter' my represent 1 meter or 
+1 milli-eter. To allow you to avoid this ambiquity, *engfmt* accepts '_' as the 
+unity scale factor. In this way '1_m' is unambiguously 1 meter. You can instruct 
+*engfmt* to output '_' as the unity scale factor by specifying the *unity* 
+argument to *set_preferences*:
+
+.. code-block:: python
+
+   >>> from engfmt import set_preferences, Quantity
+   >>> set_preferences(unity='_')
+   >>> l = Quantity(1, 'm')
+   >>> print(l)
+   1_m
+
+If you need to interpret numbers that have units and are known not to have scale 
+factors, you can specify the *ignore_sf* preference:
+
+.. code-block:: python
+
+   >>> set_preferences(ignore_sf=True, unity='', spacer=' ')
+   >>> l = Quantity('1meter')
+   >>> print(l)
+   1 meter
 
 
 Installation

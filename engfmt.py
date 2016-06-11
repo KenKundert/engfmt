@@ -383,7 +383,7 @@ class Quantity:
         else:
             return self._value
 
-    def to_str_strip(self):
+    def to_unitless_str(self):
         """Renders the value as a string in floating point notation.
 
         The original string is returned with units removed and the scale factor
@@ -397,12 +397,12 @@ class Quantity:
         else:
             return num_to_str(self._value)
 
-    def to_text_strip(self, prec=None):
+    def to_unitless_eng(self, prec=None):
         """Renders the value as a string in engineering notation."""
         # this is a bit of a hack, temporarily remove the units
         units = self.units
         self.units = None
-        eng_number = self.to_text(prec)
+        eng_number = self.to_eng(prec)
         self.units = units
         return eng_number
 
@@ -412,11 +412,11 @@ class Quantity:
 
     def to_str(self):
         """Renders the value and units as a string in floating point notation."""
-        number = self.to_str_strip()
+        number = self.to_unitless_str()
         units = self.units
         return _combine(number, '', units, Spacer)
 
-    def to_text(self, prec=None):
+    def to_eng(self, prec=None):
         """Renders the value and units as a string in engineering notation."""
 
         # determine precision
@@ -475,7 +475,7 @@ class Quantity:
         return _combine(mantissa, sf, units, Spacer)
 
     def __str__(self):
-        return self.to_text()
+        return self.to_eng()
 
     def __format__(self, fmt):
         """Convert quantity to string for Python string format function.
@@ -505,10 +505,10 @@ class Quantity:
         if match:
             align, width, prec, ftype = match.groups()
             if ftype in 'qs':
-                value = self.to_text(prec)
+                value = self.to_eng(prec)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype == 'r':
-                value = self.to_text_strip(prec)
+                value = self.to_unitless_eng(prec)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype == 'u':
                 value = self.units
@@ -522,14 +522,14 @@ class Quantity:
             elif ftype in 'Q':
                 name = getattr(self, 'name', '')
                 desc = getattr(self, 'desc', '')
-                value = self.to_text(prec)
+                value = self.to_eng(prec)
                 if name:
                     value = AssignmentFormatter.format(n=name, v=value, d=desc)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype in 'R':
                 name = getattr(self, 'name', '')
                 desc = getattr(self, 'desc', '')
-                value = self.to_text_strip(prec)
+                value = self.to_unitless_eng(prec)
                 if name:
                     value = AssignmentFormatter.format(n=name, v=value, d=desc)
                 return '{0:{1}{2}s}'.format(value, align, width)
@@ -537,32 +537,32 @@ class Quantity:
                 value = self.to_float()
                 return '{0:{1}}'.format(value, fmt)
         else:
-            return self.to_text()
+            return self.to_eng()
 
     def __float__(self):
         return self.to_float()
 
 
 # Shortcut functions {{{1
-def to_tuple(value, units=None):
+def quant_to_tuple(value, units=None):
     return Quantity(value, units).to_tuple()
 
-def to_text(value, units=None, prec=None):
-    return Quantity(value, units).to_text(prec)
+def quant_to_eng(value, units=None, prec=None):
+    return Quantity(value, units).to_eng(prec)
 
-def to_str(value, units=None):
+def quant_to_str(value, units=None):
     return Quantity(value, units).to_str()
 
-def to_float(value, units=None):
+def quant_to_float(value, units=None):
     return Quantity(value, units).to_float()
 
-def to_text_strip(value, units=None, prec=None):
-    return Quantity(value, units).to_text_strip(prec)
+def quant_to_unitless_eng(value, units=None, prec=None):
+    return Quantity(value, units).to_unitless_eng(prec)
 
-def to_str_strip(value, units=None):
-    return Quantity(value, units).to_str_strip()
+def quant_to_unitless_str(value, units=None):
+    return Quantity(value, units).to_unitless_str()
 
-def strip(value):
+def quant_strip(value):
     return Quantity(value).strip()
 
 # Text processing functions {{{1
@@ -579,7 +579,7 @@ def all_to_eng_fmt(text):
         end = match.start(0)
         number = match.group(0)
         try:
-            number = to_text(number)
+            number = quant_to_eng(number)
         except ValueError: # pragma: no cover
             # something unexpected happened
             # but this is not essential, so ignore it
@@ -602,7 +602,7 @@ def all_from_eng_fmt(text):
         end = match.start(0)
         number = match.group(0)
         try:
-            number = to_str(number)
+            number = quant_to_str(number)
         except ValueError: # pragma: no cover
             # something unexpected happened
             # but this is not essential, so ignore it
