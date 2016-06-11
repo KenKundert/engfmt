@@ -13,14 +13,14 @@ empty. This package is designed to convert quantities between the various ways
 in which they are represented.  Those ways are:
 
 As a tuple:
-    For example, 1ns would be represented as (1.0, 's').
+    For example, 1ns would be represented as (1e-9, 's').
     Notice that the scale factor is not included in the units. This is always 
     true.
 
 As a string:
     For example, 1ns would be represented as '1e-9 s' or as '0.000000001s'. This 
     form is often difficult to read for people and so *engfmt* treats it more as 
-    a machine interchange format.
+    a format meant for machines rather than people.
 
 As text:
     For example, 1ns would be represented as '1ns'.  This form is often 
@@ -32,9 +32,6 @@ clarified. Of course both are strings, but in using the term string, a computer
 science term, I am suggesting a textual representation that is meant to be 
 consumed by a computer. Conversely, the term text suggests a form that is meant 
 to be consumed by people.
-
-In addition, sometimes the units should be included, and sometimes they are 
-undesired.
 
 The *Quantity* class is provided for converting between these various forms. It 
 takes one or two arguments. The first is taken to be the value, and the second, 
@@ -138,8 +135,8 @@ format or in engineering format, and it may include the units.  For example:
    >>> strip('1.4204e9Hz')
    '1.4204e9'
 
-Notice that the output of *text* functions always include the units and the 
-output of *str* functions do not.
+Notice that the output of base functions always include the units and the output 
+of *_strip* functions do not.
 
 The output of the *to_text_strip* and *to_text* is always rounded to the 
 desired precision, which can be specified as an argument to these functions.
@@ -184,8 +181,8 @@ default value:
 Quantity Class
 --------------
 
-Though rarely used, the engfmt package defines the Quantity class, which is more 
-flexible than the shortcut functions:
+Though rarely used directly, the Quantity class forms the foundation of the 
+engfmt package. It is more flexible than the shortcut functions:
 
 .. code-block:: python
 

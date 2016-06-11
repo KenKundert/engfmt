@@ -36,6 +36,24 @@ def test_misc():
     q=Quantity('1420405751.786 Hz', 'Hz')
     assert q.strip() == '1420405751.786'
 
+    q=Quantity('1420405751.786 Hz')
+    assert q.is_nan() == False
+
+    q=Quantity('1420405751.786 Hz')
+    assert q.is_infinite() == False
+
+    q=Quantity('NaN Hz')
+    assert q.is_nan() == True
+
+    q=Quantity('NaN Hz')
+    assert q.is_infinite() == False
+
+    q=Quantity('inf Hz')
+    assert q.is_nan() == False
+
+    q=Quantity('inf Hz')
+    assert q.is_infinite() == True
+
     with pytest.raises(AssertionError):
         q=Quantity('1420405751.786 Hz', 'Ohms')
 
