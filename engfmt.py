@@ -29,7 +29,7 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
 # Imports {{{1
-__version__ = '0.6.2'
+__version__ = '0.7.0'
 import re
 
 # Parameters {{{1
