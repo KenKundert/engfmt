@@ -8,62 +8,148 @@ SI scale factors to indicate the magnitude of the number. For example:
    | 1ns
    | 1.4204GHz
 
-The pairing of a number and units is referred to as a quantity.
+A quantity is the pairing of a real number and units, though the units may be 
+empty. This package is designed to convert quantities between the various ways 
+in which they are represented.  Those ways are:
+
+As a tuple:
+    For example, 1ns would be represented as (1.0, 's').
+    Notice that the scale factor is not included in the units. This is always 
+    true.
+
+As a string:
+    For example, 1ns would be represented as '1e-9 s' or as '0.000000001s'. This 
+    form is often difficult to read for people and so *engfmt* treats it more as 
+    a machine interchange format.
+
+As text:
+    For example, 1ns would be represented as '1ns'.  This form is often 
+    difficult to read for machines and so *engfmt* treats it more as a human 
+    readable format.
+
+Here the distinction between string and text is unusual and needs to be 
+clarified. Of course both are strings, but in using the term string, a computer 
+science term, I am suggesting a textual representation that is meant to be 
+consumed by a computer. Conversely, the term text suggests a form that is meant 
+to be consumed by people.
+
+In addition, sometimes the units should be included, and sometimes they are 
+undesired.
+
+The *Quantity* class is provided for converting between these various forms. It 
+takes one or two arguments. The first is taken to be the value, and the second, 
+if given, is taken to be the units.  The value may be given as a float or as 
+a string. The string may be in floating point notation, in scientific notation, 
+or in engineering format and may include the units. By engineering notation, it 
+is meant that the number can use the SI scale factors. For example, any of the 
+following ways can be used to specify 1ns:
+
+.. code-block:: python
+
+    >>> from engfmt import Quantity
+    >>> period = Quantity(1e-9, 's')
+    >>> print(period)
+    1ns
+
+    >>> period = Quantity('0.000000001 s')
+    >>> print(period)
+    1ns
+
+    >>> period = Quantity('1e-9s')
+    >>> print(period)
+    1ns
+
+    >>> period = Quantity('1ns')
+    >>> print(period)
+    1ns
+
+In all cases, the giving the units is optional.
+
+From a quantity object, you can generate any representation:
+
+.. code-block:: python
+
+    >>> h_line = Quantity('1420.405751786 MHz')
+
+    >>> h_line.to_tuple()
+    (1420405751.786, 'Hz')
+
+    >>> h_line.to_text()
+    '1.4204GHz'
+
+    >>> h_line.to_str()
+    '1420.405751786e6Hz'
+
+You can also access the value without the units::
+
+    >>> h_line.to_float()
+    1420405751.786
+
+    >>> h_line.to_text_strip()
+    '1.4204G'
+
+    >>> h_line.to_str_strip()
+    '1420.405751786e6'
+
+Or you can access just the units::
+
+    >>> h_line.units
+    'Hz'
 
 
 Shortcut Functions
 ------------------
 
 Generally one uses the shortcut functions to convert numbers to and from 
-engineering format. All of these functions take a value and units. The value may 
-be a string or a real number. If it is a string it may be given in traditional 
-format or in engineering format, and it may include the units. For example:
+engineering format. All of these functions take the value and units in the same 
+ways that they are specified to Quantity.  In particular, the value may be 
+a string or a real number.  If it is a string it may be given in traditional 
+format or in engineering format, and it may include the units.  For example:
 
 .. code-block:: python
 
-   >>> from engfmt import to_quantity
-   >>> to_quantity('1.4204GHz')
+   >>> from engfmt import to_tuple
+   >>> to_tuple('1.4204GHz')
    (1420400000.0, 'Hz')
 
-   >>> from engfmt import to_eng_quantity
-   >>> to_eng_quantity(1420400000.0, 'Hz')
+   >>> from engfmt import to_text
+   >>> to_text(1420400000.0, 'Hz')
    '1.4204GHz'
 
-   >>> from engfmt import to_flt_quantity
-   >>> to_flt_quantity(1420400000.0, 'Hz')
+   >>> from engfmt import to_str
+   >>> to_str(1420400000.0, 'Hz')
    '1.4204e+09Hz'
 
-   >>> from engfmt import to_number
-   >>> to_number('1.4204GHz')
+   >>> from engfmt import to_float
+   >>> to_float('1.4204GHz')
    1420400000.0
 
-   >>> from engfmt import to_flt_number
-   >>> to_flt_number('1.4204GHz')
+   >>> from engfmt import to_str_strip
+   >>> to_str_strip('1.4204GHz')
    '1.4204e9'
 
-   >>> from engfmt import to_eng_number
-   >>> to_eng_number('1.4204e9Hz')
+   >>> from engfmt import to_text_strip
+   >>> to_text_strip('1.4204e9Hz')
    '1.4204G'
 
-   >>> from engfmt import strip_units
-   >>> strip_units('1.4204GHz')
+   >>> from engfmt import strip
+   >>> strip('1.4204GHz')
    '1.4204G'
-   >>> strip_units('1.4204e9Hz')
+   >>> strip('1.4204e9Hz')
    '1.4204e9'
 
-Notice that the output of *quanity* functions always include the units and the 
-output of *number* functions do not.
+Notice that the output of *text* functions always include the units and the 
+output of *str* functions do not.
 
-The output of the *to_eng_number* and *to_eng_quantity* is always rounded to the 
+The output of the *to_text_strip* and *to_text* is always rounded to the 
 desired precision, which can be specified as an argument to these functions.
-This differs from the *to_flt_number* and *to_flt_quantity* functions. They 
-attempt to retain the original format of the number if it is specified as 
-a string. In this way it retains its original precision. The underlying 
-assumption behind this difference is that engineering notation is generally used 
-when communicating with people, whereas floating point notation is used when 
-communicating with machines. People benefit from having a limited number of 
-digits in the numbers, whereas machines benefit from have full precision 
-numbers.
+This differs from the *to_str_strip* and *to_str* functions. They attempt to 
+retain the original format of the number if it is specified as a string. In this 
+way it retains its original precision. The underlying assumption behind this 
+difference is that engineering notation is generally used when communicating 
+with people, whereas floating point notation is used when communicating with 
+machines. People benefit from having a limited number of digits in the numbers, 
+whereas machines benefit from have full precision numbers.
 
 
 Preferences
@@ -75,13 +161,13 @@ You can adjust some of the behavior of these functions on a global basis using
 .. code-block:: python
 
    >>> from engfmt import set_preferences
-   >>> set_preferences(prec=2, spacer=' ')
-   >>> to_eng_quantity('1.4204GHz')
+   >>> set_preferences(hprec=2, spacer=' ')
+   >>> to_text('1.4204GHz')
    '1.42 GHz'
-   >>> to_eng_quantity('1.4204GHz', prec=4)
+   >>> to_text('1.4204GHz', prec=4)
    '1.4204 GHz'
 
-Specifying *prec* to be 4 gives 5 digits of precision (you get one more digit 
+Specifying *hprec* to be 4 gives 5 digits of precision (you get one more digit 
 than the number you specify for precision). Thus, the valid range for *prec* is 
 from 0 to around 12 to 14 for double precision numbers.
 
@@ -90,16 +176,16 @@ default value:
 
 .. code-block:: python
 
-   >>> set_preferences(prec=None, spacer=None)
-   >>> to_eng_quantity('1.4204GHz')
+   >>> set_preferences(hprec=None, spacer=None)
+   >>> to_text('1.4204GHz')
    '1.4204GHz'
 
 
 Quantity Class
 --------------
 
-Though rarely used, the engfmt package defines the Quantity class, which is 
-a bit more flexible than the shortcut functions:
+Though rarely used, the engfmt package defines the Quantity class, which is more 
+flexible than the shortcut functions:
 
 .. code-block:: python
 
@@ -112,25 +198,25 @@ a bit more flexible than the shortcut functions:
    >>> float(h_line)
    1420405751.786
 
-   >>> h_line.to_quantity()
+   >>> h_line.to_tuple()
    (1420405751.786, 'Hz')
 
-   >>> h_line.to_eng_quantity(4)
-   '1.4204GHz'
+   >>> h_line.to_text(7)
+   '1.4204058GHz'
 
-   >>> h_line.to_flt_quantity()
+   >>> h_line.to_str()
    '1420.405751786e6Hz'
 
-   >>> h_line.to_number()
+   >>> h_line.to_float()
    1420405751.786
 
-   >>> h_line.to_eng_number(4)
+   >>> h_line.to_text_strip(4)
    '1.4204G'
 
-   >>> h_line.to_flt_number()
+   >>> h_line.to_str_strip()
    '1420.405751786e6'
 
-   >>> h_line.strip_units()
+   >>> h_line.strip()
    '1420.405751786M'
 
    >>> h_line.units
@@ -196,6 +282,9 @@ Zero degrees Celsius in Kelvin:
    >>> zeroC = Quantity('C0')
    >>> print(zeroC)
    273.15K
+
+*engfmt* uses *k* rather than *K* to represent kilo so that you can distinguish 
+between kilo and Kelvin.
 
 Permittivity of free space:
 
@@ -278,7 +367,7 @@ You can also use the string and floating point format type specifiers:
    1.4204GHz
 
 It is also possible to add a name and perhaps a description to the quantity, and 
-special format codes are available for printing those as well:
+access those with special format codes as well:
 
 .. code-block:: python
 
@@ -309,7 +398,7 @@ a number:
 .. code-block:: python
 
    >>> try:
-   ...     value, units = to_quantity('xxx')
+   ...     value, units = to_tuple('xxx')
    ... except ValueError as err:
    ...     print(err)
    xxx: not a valid number.
@@ -356,21 +445,17 @@ Python namespace. For example:
 
 Any number of quantities may be given, with each quantity given on its own line.  
 The identifier given to the left '=' is the name of the variable in the local 
-namespace that is used to hold the quantity. The text after the '--' is ignored 
-and is generally used as a description of the quantity.
+namespace that is used to hold the quantity. The text after the '--' is used as 
+a description of the quantity.
 
 
 Installation
 ------------
 
-Use 'pip install engfmt' to install. Requires Python2.7 or Python3.3 or better.
+Use 'pip install engfmt' to install. Requires Python2.7 or Python3.2 or better.
 
 .. image:: https://travis-ci.org/KenKundert/engfmt.svg?branch=master
     :target: https://travis-ci.org/KenKundert/engfmt
-
-.. image:: https://coveralls.io/repos/github/KenKundert/engfmt/badge.svg?branch=master
-    :target: https://coveralls.io/github/KenKundert/engfmt?branch=master
-
 
 
 Testing

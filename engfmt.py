@@ -29,12 +29,13 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
 # Imports {{{1
-__version__ = '0.7.0'
+__version__ = '0.6.2'
 import re
 
 # Parameters {{{1
 CURRENCY_SYMBOLS = '$'
-DEFAULT_PRECISION = 4
+DEFAULT_HUMAN_PRECISION = 4
+DEFAULT_MACHINE_PRECISION = 8
 DEFAULT_SPACER = ''
 DEFAULT_UNITY_SCALE_FACTOR = ''
 DEFAULT_OUTPUT_SCALE_FACTORS = 'TGMkmunpfa'
@@ -199,7 +200,7 @@ sf_free_number_converters = [
     ]
 ]
 
-format_spec = re.compile(r'([<>]?)(\d*)(?:\.(\d+))?([qruseEfFgGdnQR]?)'.format(**locals()))
+format_spec = re.compile(r'\A([<>]?)(\d*)(?:\.(\d+))?([qruseEfFgGdnQR]?)\Z')
 
 # Utilities {{{1
 # is_str {{{2
@@ -208,8 +209,8 @@ def is_str(obj):
     """Identifies strings in all their various guises."""
     return isinstance(obj, string_types)
 
-def to_str(num):
-    return "{0:.{1}g}".format(num, Precision+1)
+def num_to_str(num):
+    return "{0:.{1}g}".format(num, MachinePrecision+1)
 
 # _combine {{{2
 def _combine(mantissa, sf, units, spacer):
@@ -233,7 +234,8 @@ def _combine(mantissa, sf, units, spacer):
         return mantissa + sf
 
 # Preferences {{{1
-Precision = DEFAULT_PRECISION
+HumanPrecision = DEFAULT_HUMAN_PRECISION
+MachinePrecision = DEFAULT_MACHINE_PRECISION
 Spacer = DEFAULT_SPACER
 UnityScaleFactor = DEFAULT_UNITY_SCALE_FACTOR
 OutputScaleFactors = DEFAULT_OUTPUT_SCALE_FACTORS
@@ -242,13 +244,17 @@ AssignmentFormatter = DEFAULT_ASSIGNMENT_FORMATTER
 AssignmentRecognizer = re.compile(DEFAULT_ASSIGNMENT_RECOGNIZER)
 
 def set_preferences(
-        prec=False, spacer=False, unity=False, output=False, ignore_sf=False,
-        assign_fmt=False, assign_rec=False
+        hprec=False, mprec =False, spacer=False, unity=False, output=False,
+        ignore_sf=0, assign_fmt=False, assign_rec=False
 ):
     """Set Global Preferences
 
-    prec (int): precision in digits where 0 corresponds to 1 digit, must be
-        nonnegative.
+    hprec (int): human precision in digits where 0 corresponds to 1 digit, must
+        be nonnegative. This precision is used when generating engineering
+        format.
+    mprec (int): machine precision in digits where 0 corresponds to 1 digit,
+        must be nonnegative. This precision is used when not generating
+        engineering format.
     spacer (str): may be '' or ' ', use the latter if you prefer a space between
         the number and the units. Generally using ' ' makes numbers easier to
         use, particularly with complex units, and using '' is easier to parse.
@@ -266,10 +272,15 @@ def set_preferences(
     Any value not passed in are left alone. Pass in None to reset it to its
     default value.
     """
-    global Precision, Spacer, UnityScaleFactor, OutputScaleFactors
+    global HumanPrecision, MachinePrecision
+    global Spacer, UnityScaleFactor, OutputScaleFactors, IgnoreScaleFactors
     global AssignmentFormatter, AssignmentRecognizer
-    if prec is not False:
-        Precision = prec if prec is not None else DEFAULT_PRECISION
+    if hprec is not False:
+        HumanPrecision = hprec if hprec is not None else DEFAULT_HUMAN_PRECISION
+    if mprec is not False:
+        MachinePrecision = (
+            mprec if mprec is not None else DEFAULT_MACHINE_PRECISION
+        )
     if spacer is not False:
         Spacer = spacer if spacer is not None else DEFAULT_SPACER
     if unity is not False:
@@ -280,7 +291,7 @@ def set_preferences(
         OutputScaleFactors = (
             output if output is not None else DEFAULT_OUTPUT_SCALE_FACTORS
         )
-    if ignore_sf is not False:
+    if ignore_sf is not 0:
         IgnoreScaleFactors = (
             ignore_sf if ignore_sf is not None else DEFAULT_IGNORE_SCALE_FACTORS
         )
@@ -295,7 +306,7 @@ def set_preferences(
 
 # Quantity class {{{1
 class Quantity:
-    def __init__(self, value, units=None, ignore_sf=IgnoreScaleFactors):
+    def __init__(self, value, units=None, ignore_sf=None):
         """Physical Quantity
         A real quantity with units.
 
@@ -308,6 +319,7 @@ class Quantity:
             units = ''
         self._value = value
         self.units = units
+        ignore_sf = IgnoreScaleFactors if ignore_sf is None else ignore_sf
 
         if is_str(value):
             if ignore_sf:
@@ -351,7 +363,7 @@ class Quantity:
         """Add a description."""
         self.desc = desc
 
-    def strip_units(self):
+    def strip(self):
         """Returns the value as a string in the originally given notation.
 
         The original string is returned with units removed. This allows you
@@ -361,9 +373,9 @@ class Quantity:
         if self._value is None:
             return self._mantissa + self._scale_factor
         else:
-            return to_str(self._value)
+            return num_to_str(self._value)
 
-    def to_number(self):
+    def to_float(self):
         """Returns the value as a float."""
         if self._value is None:
             sf = self._scale_factor
@@ -371,7 +383,7 @@ class Quantity:
         else:
             return self._value
 
-    def to_flt_number(self):
+    def to_str_strip(self):
         """Renders the value as a string in floating point notation.
 
         The original string is returned with units removed and the scale factor
@@ -383,43 +395,43 @@ class Quantity:
             sf = self._scale_factor
             return self._mantissa + MAPPINGS.get(sf, [sf])[0]
         else:
-            return to_str(self._value)
+            return num_to_str(self._value)
 
-    def to_eng_number(self, prec=None):
+    def to_text_strip(self, prec=None):
         """Renders the value as a string in engineering notation."""
         # this is a bit of a hack, temporarily remove the units
         units = self.units
         self.units = None
-        eng_number = self.to_eng_quantity(prec)
+        eng_number = self.to_text(prec)
         self.units = units
         return eng_number
 
-    def to_quantity(self):
+    def to_tuple(self):
         """Returns a tuple that contains the value as a float and the units."""
-        return self.to_number(), self.units
+        return self.to_float(), self.units
 
-    def to_flt_quantity(self):
+    def to_str(self):
         """Renders the value and units as a string in floating point notation."""
-        number = self.to_flt_number()
+        number = self.to_str_strip()
         units = self.units
         return _combine(number, '', units, Spacer)
 
-    def to_eng_quantity(self, prec=None):
+    def to_text(self, prec=None):
         """Renders the value and units as a string in engineering notation."""
 
         # determine precision
         if prec is None:
-            prec = Precision
+            prec = HumanPrecision
         else:
             prec = int(prec)
         assert (prec >= 0)
 
         # check for infinities or NaN
         if self.is_infinite() or self.is_nan():
-            return _combine(self.strip_units(), '', self.units, ' ')
+            return _combine(self.strip(), '', self.units, ' ')
 
         # convert into scientific notation with proper precision
-        value = self.to_number()
+        value = self.to_float()
         units = self.units
         number = "%.*e" % (prec, value)
         mantissa, exp = number.split("e")
@@ -463,7 +475,7 @@ class Quantity:
         return _combine(mantissa, sf, units, Spacer)
 
     def __str__(self):
-        return self.to_eng_quantity()
+        return self.to_text()
 
     def __format__(self, fmt):
         """Convert quantity to string for Python string format function.
@@ -493,10 +505,10 @@ class Quantity:
         if match:
             align, width, prec, ftype = match.groups()
             if ftype in 'qs':
-                value = self.to_eng_quantity(prec)
+                value = self.to_text(prec)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype == 'r':
-                value = self.to_eng_number(prec)
+                value = self.to_text_strip(prec)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype == 'u':
                 value = self.units
@@ -510,48 +522,48 @@ class Quantity:
             elif ftype in 'Q':
                 name = getattr(self, 'name', '')
                 desc = getattr(self, 'desc', '')
-                value = self.to_eng_quantity(prec)
+                value = self.to_text(prec)
                 if name:
                     value = AssignmentFormatter.format(n=name, v=value, d=desc)
                 return '{0:{1}{2}s}'.format(value, align, width)
             elif ftype in 'R':
                 name = getattr(self, 'name', '')
                 desc = getattr(self, 'desc', '')
-                value = self.to_eng_number(prec)
+                value = self.to_text_strip(prec)
                 if name:
                     value = AssignmentFormatter.format(n=name, v=value, d=desc)
                 return '{0:{1}{2}s}'.format(value, align, width)
             else:
-                value = self.to_number()
+                value = self.to_float()
                 return '{0:{1}}'.format(value, fmt)
         else:
-            return self.to_eng_quantity()
+            return self.to_text()
 
     def __float__(self):
-        return self.to_number()
+        return self.to_float()
 
 
 # Shortcut functions {{{1
-def to_quantity(value, units=None):
-    return Quantity(value, units).to_quantity()
+def to_tuple(value, units=None):
+    return Quantity(value, units).to_tuple()
 
-def to_eng_quantity(value, units=None, prec=None):
-    return Quantity(value, units).to_eng_quantity(prec)
+def to_text(value, units=None, prec=None):
+    return Quantity(value, units).to_text(prec)
 
-def to_flt_quantity(value, units=None):
-    return Quantity(value, units).to_flt_quantity()
+def to_str(value, units=None):
+    return Quantity(value, units).to_str()
 
-def to_number(value, units=None):
-    return Quantity(value, units).to_number()
+def to_float(value, units=None):
+    return Quantity(value, units).to_float()
 
-def to_eng_number(value, units=None, prec=None):
-    return Quantity(value, units).to_eng_number(prec)
+def to_text_strip(value, units=None, prec=None):
+    return Quantity(value, units).to_text_strip(prec)
 
-def to_flt_number(value, units=None):
-    return Quantity(value, units).to_flt_number()
+def to_str_strip(value, units=None):
+    return Quantity(value, units).to_str_strip()
 
-def strip_units(value):
-    return Quantity(value).strip_units()
+def strip(value):
+    return Quantity(value).strip()
 
 # Text processing functions {{{1
 # All to engineering format {{{2
@@ -567,8 +579,8 @@ def all_to_eng_fmt(text):
         end = match.start(0)
         number = match.group(0)
         try:
-            number = to_eng_quantity(number)
-        except ValueError:
+            number = to_text(number)
+        except ValueError: # pragma: no cover
             # something unexpected happened
             # but this is not essential, so ignore it
             pass
@@ -590,8 +602,8 @@ def all_from_eng_fmt(text):
         end = match.start(0)
         number = match.group(0)
         try:
-            number = to_flt_quantity(number)
-        except ValueError:
+            number = to_str(number)
+        except ValueError: # pragma: no cover
             # something unexpected happened
             # but this is not essential, so ignore it
             pass
@@ -630,5 +642,5 @@ def add_to_namespace(quantities):
             quantity.add_name(name)
             quantity.add_desc(desc)
             namespace[name] = quantity
-        else:
+        else: # pragma: no cover
             raise ValueError('{}: not a valid number.'.format(line))

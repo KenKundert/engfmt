@@ -17,6 +17,7 @@ def test_format():
     assert '{:d}'.format(q) == 'frequency of hydrogen line'
     assert '{:Q}'.format(q) == 'f = 1.4204 GHz'
     assert '{:R}'.format(q) == 'f = 1.4204G'
+    assert '{:X}'.format(q) == '1.4204 GHz'
 
     q=Quantity('2n')
     assert float(q) == 2e-9

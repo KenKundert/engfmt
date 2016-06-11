@@ -197,37 +197,42 @@ test_cases = [
     TestCase('stack', '+$NAN', ('+nan', '$'), '$nan'),
 
     # preferences
-    TestCase('flotation', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1GHz', {'prec':0}),
-    TestCase('bodyguard', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4GHz', {'prec':1}),
-    TestCase('radiogram', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42GHz', {'prec':2}),
-    TestCase('omnibus', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42GHz', {'prec':3}),
-    TestCase('transmit', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204GHz', {'prec':4}),
-    TestCase('morality', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42041GHz', {'prec':5}),
-    TestCase('reward', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420406GHz', {'prec':6}),
-    TestCase('smudge', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204058GHz', {'prec':7}),
-    TestCase('animator', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42040575GHz', {'prec':8}),
-    TestCase('woodwind', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420405752GHz', {'prec':9}),
-    TestCase('underpay', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204057518GHz', {'prec':10}),
-    TestCase('horoscope', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42040575179GHz', {'prec':11}),
-    TestCase('drivel', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420405751786GHz', {'prec':12}),
-    TestCase('railcard', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420405751786GHz', {'prec':13}),
-    TestCase('elixir', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204 GHz', {'prec':None, 'spacer':' '}),
+    TestCase('flotation', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1GHz', {'hprec':0}),
+    TestCase('bodyguard', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4GHz', {'hprec':1}),
+    TestCase('radiogram', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42GHz', {'hprec':2}),
+    TestCase('omnibus', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42GHz', {'hprec':3}),
+    TestCase('transmit', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204GHz', {'hprec':4}),
+    TestCase('morality', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42041GHz', {'hprec':5}),
+    TestCase('reward', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420406GHz', {'hprec':6}),
+    TestCase('smudge', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204058GHz', {'hprec':7}),
+    TestCase('animator', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42040575GHz', {'hprec':8}),
+    TestCase('woodwind', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420405752GHz', {'hprec':9}),
+    TestCase('underpay', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204057518GHz', {'hprec':10}),
+    TestCase('horoscope', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.42040575179GHz', {'hprec':11}),
+    TestCase('drivel', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420405751786GHz', {'hprec':12}),
+    TestCase('railcard', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.420405751786GHz', {'hprec':13}),
+    TestCase('elixir', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204 GHz', {'hprec':None, 'spacer':' '}),
     TestCase('henna', '3.141592 Hz', ('3.141592', 'Hz'), '3.1416_Hz', {'unity':'_', 'spacer':''}),
     TestCase('eastward', '3.141592 Hz', ('3.141592', 'Hz'), '3.1416 Hz', {'spacer':' '}),
-    TestCase('string', '1420.405751786 MHz', ('1420.405751786e6', 'Hz'), '1.4204e9 Hz', {'output':''}),
+    TestCase('string', '1420.405751786MHz', ('1420.405751786e6', 'Hz'), '1.4204e9Hz', {'output':''}),
+    TestCase('airliner', '1ns', ('1', 'ns'), '1ns', {'ignore_sf':True}),
 ]
 
 names = set()
 def test_number_recognition():
-    set_preferences(prec=None, spacer=None, unity=None, output=None)
     for case in test_cases:
         assert case.name not in names
         names.add(case.name)
+
+        set_preferences(
+            hprec=None, mprec=None, spacer=None, unity=None, output=None,
+            ignore_sf=None, assign_fmt=None, assign_rec=None
+        )
         try:
             if case.prefs:
                 set_preferences(**case.prefs)
             q = Quantity(case.text)
-            assert ((q.to_flt_number(), q.units) == case.raw), case.name
+            assert ((q.to_str_strip(), q.units) == case.raw), case.name
             assert (str(q) == case.formatted), case.name
             # assure that the output value can be read as an input
             Quantity(str(q))
@@ -238,4 +243,7 @@ def test_number_recognition():
         except Exception:
             print('%s: unexpected exception occurred.' % case.name)
             raise
-    set_preferences(prec=None, spacer=None, unity=None, output=None)
+    set_preferences(
+        hprec=None, mprec=None, spacer=None, unity=None, output=None,
+        ignore_sf=None, assign_fmt=None, assign_rec=None
+    )

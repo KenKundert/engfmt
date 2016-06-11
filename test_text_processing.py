@@ -20,7 +20,7 @@ test_cases = [
 
 names = set()
 def test_text_processing():
-    set_preferences(spacer='')
+    set_preferences(spacer='', output=None)
     for case in test_cases:
         assert case.name not in names
         names.add(case.name)

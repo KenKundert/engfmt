@@ -43,6 +43,7 @@ def test_namespace():
         epsilon0 = eps0 -- Permittivity of free space
         mu0 = mu0 -- Permeability of free space
         Z0 = Z0 -- Characteristic impedance of free space
+        c = c  -- speed of light
     ''')
 
     assert str(h_line) == '1.4204 GHz'
