@@ -508,10 +508,13 @@ factors, you can specify the *ignore_sf* preference:
 
 .. code-block:: python
 
-   >>> set_preferences(ignore_sf=True, unity='', spacer=' ')
-   >>> l = Quantity('1meter')
+   >>> set_preferences(ignore_sf=True, unity='')
+   >>> l = Quantity('1000m')
+   >>> l.to_tuple()
+   (1000.0, 'm')
+
    >>> print(l)
-   1 meter
+   1km
 
 
 Installation
