@@ -17,21 +17,15 @@ As a tuple:
     Notice that the scale factor is not included in the units. This is always 
     true.
 
-As a string:
+As a string in conventional formats:
     For example, 1ns would be represented as '1e-9 s' or as '0.000000001s'. This 
     form is often difficult to read for people and so *engfmt* treats it more as 
     a format meant for machines rather than people.
 
-As text:
+As a string in engineering format:
     For example, 1ns would be represented as '1ns'.  This form is often 
     difficult to read for machines and so *engfmt* treats it more as a human 
     readable format.
-
-Here the distinction between string and text is unusual and needs to be 
-clarified. Of course both are strings, but in using the term string, a computer 
-science term, I am suggesting a textual representation that is meant to be 
-consumed by a computer. Conversely, the term text suggests a form that is meant 
-to be consumed by people.
 
 The *Quantity* class is provided for converting between these various forms. It 
 takes one or two arguments. The first is taken to be the value, and the second, 
@@ -93,6 +87,15 @@ Or you can access just the units::
     >>> h_line.units
     'Hz'
 
+The output of the *to_eng* and *to_unitless_eng* methods is always rounded to 
+the desired precision, which can be specified as an argument.  This differs from 
+the *to_str* and *to_unitless_str* methods. They attempt to retain the original 
+format of the number if it is specified as a string. In this way it retains its 
+original precision. The underlying assumption behind this difference is that 
+engineering notation is generally used when communicating with people, whereas 
+floating point notation is used when communicating with machines. People benefit 
+from having a limited number of digits in the numbers, whereas machines benefit 
+from have full precision numbers.
 
 Shortcut Functions
 ------------------
@@ -135,19 +138,6 @@ format or in engineering format, and it may include the units.  For example:
    >>> quant_strip('1.4204e9Hz')
    '1.4204e9'
 
-Notice that the output of base functions always include the units and the output 
-of *unitless* functions do not.
-
-The output of the *to_unitless_eng* and *to_eng* is always rounded to the 
-desired precision, which can be specified as an argument to these functions.
-This differs from the *to_unitless_str* and *to_str* functions. They attempt to 
-retain the original format of the number if it is specified as a string. In this 
-way it retains its original precision. The underlying assumption behind this 
-difference is that engineering notation is generally used when communicating 
-with people, whereas floating point notation is used when communicating with 
-machines. People benefit from having a limited number of digits in the numbers, 
-whereas machines benefit from have full precision numbers.
-
 
 Preferences
 -----------
@@ -164,9 +154,9 @@ You can adjust some of the behavior of these functions on a global basis using
    >>> quant_to_eng('1.4204GHz', prec=4)
    '1.4204 GHz'
 
-Specifying *hprec* to be 4 gives 5 digits of precision (you get one more digit 
-than the number you specify for precision). Thus, the valid range for *prec* is 
-from 0 to around 12 to 14 for double precision numbers.
+Specifying *hprec* (human precision) to be 4 gives 5 digits of precision (you 
+get one more digit than the number you specify for precision). Thus, the valid 
+range for *prec* is from 0 to around 12 to 14 for double precision numbers.
 
 Passing *None* as a value in *set_preferences* returns that preference to its 
 default value:
@@ -177,12 +167,50 @@ default value:
    >>> quant_to_eng('1.4204GHz')
    '1.4204GHz'
 
+The available preferences are:
+
+hprec (int):
+    Human precision in digits where 0 corresponds to 1 digit, must
+    be nonnegative. This precision is used when generating engineering
+    format.
+
+mprec (int):
+    Machine precision in digits where 0 corresponds to 1 digit.
+    Must be nonnegative. This precision is used when not generating
+    engineering format.
+
+spacer (str):
+    May be '' or ' ', use the latter if you prefer a space between
+    the number and the units. Generally using ' ' makes numbers easier to
+    read, particularly with complex units, and using '' is easier to parse.
+
+unity (str):
+    The output scale factor for unity, generally '' or '_'.
+
+output (str):
+    Which scale factors to output, generally one would only use familiar scale 
+    factors.
+
+ignore_sf (bool):
+    Whether scale factors should be ignored by default.
+
+assign_fmt (str):
+    Format string for an assignment. Will be passed through string format 
+    method.  Format string takes three possible arguments named n,
+    q, and d for the name, value and description.  The default is '{n} = {v}'
+
+assign_rec (str):
+    Regular expression used to recognize an assignment. Used in 
+    add_to_namespace(). Default recognizes the form:
+
+        "Temp = 300_K -- Temperature".
+
 
 Quantity Class
 --------------
 
 Though rarely used directly, the Quantity class forms the foundation of the 
-engfmt package. It is more flexible than the shortcut functions:
+*engfmt* package. It is more flexible than the shortcut functions:
 
 .. code-block:: python
 
@@ -237,8 +265,7 @@ engfmt package. It is more flexible than the shortcut functions:
 Physical Constants
 ------------------
 
-The Quantity class also supports a small number of physical constants (you can 
-modify the source code if you would like to add more).
+The Quantity class also supports a small number of physical constants.
 
 Plank's constant:
 
@@ -307,11 +334,21 @@ Characteristic impedance of free space:
    >>> print(Z0)
    376.73Ohms
 
+You can add additional constants by adding them to the CONSTANTS dictionary:
+
+.. code-block:: python
+
+   >>> from engfmt import Quantity, CONSTANTS
+   >>> CONSTANTS['h_line'] = (1.420405751786e9, 'Hz')
+   >>> h_line = Quantity('h_line')
+   >>> print(h_line)
+   1.4204GHz
+
 
 String Formatting
 -----------------
 
-Quantities can be passed into the string *format* function:
+Quantities can be passed into the string *format* method:
 
 .. code-block:: python
 
@@ -325,8 +362,8 @@ You can specify the precision as part of the format specification
    >>> print('{:.6}'.format(h_line))
    1.420406GHz
 
-The 'q' type specifier can be used to explicitly indicate both the number and 
-units are desired:
+The 'q' type specifier can be used to explicitly indicate that both the number 
+and the units are desired:
 
 .. code-block:: python
 
@@ -453,7 +490,7 @@ By default, *engfmt* treats both the scale factor and the units as being
 optional. With the scale factor being optional, the meaning of some 
 specifications can be ambiguous. For example, '1m' may represent 1 milli or it 
 may represent 1 meter.  Similarly, '1meter' my represent 1 meter or 
-1 milli-eter. To allow you to avoid this ambiquity, *engfmt* accepts '_' as the 
+1 milli-eter. To allow you to avoid this ambiguity, *engfmt* accepts '_' as the 
 unity scale factor. In this way '1_m' is unambiguously 1 meter. You can instruct 
 *engfmt* to output '_' as the unity scale factor by specifying the *unity* 
 argument to *set_preferences*:

@@ -249,23 +249,23 @@ def set_preferences(
 ):
     """Set Global Preferences
 
-    hprec (int): human precision in digits where 0 corresponds to 1 digit, must
+    hprec (int): Human precision in digits where 0 corresponds to 1 digit. Must
         be nonnegative. This precision is used when generating engineering
         format.
-    mprec (int): machine precision in digits where 0 corresponds to 1 digit,
+    mprec (int): Machine precision in digits where 0 corresponds to 1 digit,
         must be nonnegative. This precision is used when not generating
         engineering format.
-    spacer (str): may be '' or ' ', use the latter if you prefer a space between
+    spacer (str): May be '' or ' ', use the latter if you prefer a space between
         the number and the units. Generally using ' ' makes numbers easier to
-        use, particularly with complex units, and using '' is easier to parse.
-    unity (str): the scale factor for unity, generally '' or '_'.
-    output (str): which scale factors to output, generally one would only use
+        read, particularly with complex units, and using '' is easier to parse.
+    unity (str): The output scale factor for unity, generally '' or '_'.
+    output (str): Which scale factors to output, generally one would only use
         familiar scale factors.
-    ignore_sf (bool): whether scale factors should be ignored by default.
-    assign_fmt (str): format string for an assignment. Will be passed through
+    ignore_sf (bool): Whether scale factors should be ignored by default.
+    assign_fmt (str): Format string for an assignment. Will be passed through
         .format function. Format string takes three possible arguments named n,
         q, and d for the name, value and description.  The default is '{n} = {v}'
-    assign_rec (str): regular expression used to recognize an assignment. Used
+    assign_rec (str): Regular expression used to recognize an assignment. Used
         in add_to_namespace(). Default recognizes the form
             "Temp = 300_K -- Temperature".
 
