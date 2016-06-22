@@ -4,13 +4,13 @@
 #
 # This module inputs and outputs in several different forms:
 #    quantities (numbers with units):
-#        (1e6, 'Hz') -- quant
-#        '1MHz'      -- eng_quant
-#        '1e6Hz'     -- flt_quant
+#        (1e6, 'Hz') -- quantity
+#        '1MHz'      -- engineering format
+#        '1e6Hz'     -- string
 #    numbers (numbers without units):
 #        1e6         -- num
-#        '1M'        -- eng_num
-#        '1e6'       -- flt_num
+#        '1M'        -- unitless engineering format
+#        '1e6'       -- unitless string
 
 # License {{{1
 # Copyright (C) 2016 Kenneth S. Kundert
@@ -60,33 +60,33 @@ CONSTANTS = {
 
 # Constants {{{1
 MAPPINGS = {
-    'Y' : ('e24',  1e24 ),
-    'Z' : ('e21',  1e21 ),
-    'E' : ('e18',  1e18 ),
-    'P' : ('e15',  1e15 ),
-    'T' : ('e12',  1e12 ),
-    'G' : ('e9',   1e9  ),
-    'M' : ('e6',   1e6  ),
-    'K' : ('e3',   1e3  ),
-    'k' : ('e3',   1e3  ),
-    '_' : ('',     1    ),
-    ''  : ('',     1    ),
-    'm' : ('e-3',  1e-3 ),
-    'u' : ('e-6',  1e-6 ),
-    'n' : ('e-9',  1e-9 ),
-    'p' : ('e-12', 1e-12),
-    'f' : ('e-15', 1e-15),
-    'a' : ('e-18', 1e-18),
-    'z' : ('e-21', 1e-21),
-    'y' : ('e-24', 1e-24),
+    'Y': ('e24',  1e24 ),
+    'Z': ('e21',  1e21 ),
+    'E': ('e18',  1e18 ),
+    'P': ('e15',  1e15 ),
+    'T': ('e12',  1e12 ),
+    'G': ('e9',   1e9  ),
+    'M': ('e6',   1e6  ),
+    'K': ('e3',   1e3  ),
+    'k': ('e3',   1e3  ),
+    '_': ('',     1    ),
+    '' : ('',     1    ),
+    'm': ('e-3',  1e-3 ),
+    'u': ('e-6',  1e-6 ),
+    'n': ('e-9',  1e-9 ),
+    'p': ('e-12', 1e-12),
+    'f': ('e-15', 1e-15),
+    'a': ('e-18', 1e-18),
+    'z': ('e-21', 1e-21),
+    'y': ('e-24', 1e-24),
 }
 
 BIG_SCALE_FACTORS = 'kMGTPEZY'
-    # these must be given in order, one for every three decades
-    # use k rather than K, because K looks like a temperature when used alone
-    #
+    # These must be given in order, one for every three decades.
+    # Use k rather than K, because K looks like a temperature when used alone.
+
 SMALL_SCALE_FACTORS = 'munpfazy'
-    # these must be given in order, one for every three decades
+    # These must be given in order, one for every three decades.
 
 # Pattern Definitions {{{1
 # Build regular expressions used to recognize quantities
@@ -184,7 +184,7 @@ simple_nan = (
 
 all_number_converters = [
     (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
-    for pattern, get_mant, get_sf, get_units  in [
+    for pattern, get_mant, get_sf, get_units in [
         number_with_exponent, number_with_scale_factor, simple_number,
         currency_with_exponent, currency_with_scale_factor, simple_currency,
         nan_with_units, currency_nan, simple_nan,
@@ -193,13 +193,14 @@ all_number_converters = [
 
 sf_free_number_converters = [
     (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
-    for pattern, get_mant, get_sf, get_units  in [
+    for pattern, get_mant, get_sf, get_units in [
         number_with_exponent, simple_number,
         currency_with_exponent, simple_currency,
         nan_with_units, currency_nan, simple_nan,
     ]
 ]
 
+# Regular expression for recognizing and decomposing string .format method codes
 format_spec = re.compile(r'\A([<>]?)(\d*)(?:\.(\d+))?([qruseEfFgGdnQR]?)\Z')
 
 # Utilities {{{1
@@ -244,7 +245,7 @@ AssignmentFormatter = DEFAULT_ASSIGNMENT_FORMATTER
 AssignmentRecognizer = re.compile(DEFAULT_ASSIGNMENT_RECOGNIZER)
 
 def set_preferences(
-        hprec=False, mprec =False, spacer=False, unity=False, output=False,
+        hprec=False, mprec=False, spacer=False, unity=False, output=False,
         ignore_sf=0, assign_fmt=False, assign_rec=False
 ):
     """Set Global Preferences
@@ -263,8 +264,9 @@ def set_preferences(
         familiar scale factors.
     ignore_sf (bool): Whether scale factors should be ignored by default.
     assign_fmt (str): Format string for an assignment. Will be passed through
-        .format function. Format string takes three possible arguments named n,
-        q, and d for the name, value and description.  The default is '{n} = {v}'
+        string .format method. Format string takes three possible arguments
+        named n, q, and d for the name, value and description.  The default is
+        '{n} = {v}'
     assign_rec (str): Regular expression used to recognize an assignment. Used
         in add_to_namespace(). Default recognizes the form
             "Temp = 300_K -- Temperature".
@@ -356,11 +358,11 @@ class Quantity:
         return value.lower() in ['nan', '-nan', '+nan']
 
     def add_name(self, name):
-        """Add a name."""
+        "Add a name."
         self.name = name
 
     def add_desc(self, desc):
-        """Add a description."""
+        "Add a description."
         self.desc = desc
 
     def strip(self):
@@ -398,7 +400,7 @@ class Quantity:
             return num_to_str(self._value)
 
     def to_unitless_eng(self, prec=None):
-        """Renders the value as a string in engineering notation."""
+        "Renders the value as a string in engineering notation."
         # this is a bit of a hack, temporarily remove the units
         units = self.units
         self.units = None
@@ -407,17 +409,17 @@ class Quantity:
         return eng_number
 
     def to_tuple(self):
-        """Returns a tuple that contains the value as a float and the units."""
+        "Returns a tuple that contains the value as a float and the units."
         return self.to_float(), self.units
 
     def to_str(self):
-        """Renders the value and units as a string in floating point notation."""
+        "Renders the value and units as a string in floating point notation."
         number = self.to_unitless_str()
         units = self.units
         return _combine(number, '', units, Spacer)
 
     def to_eng(self, prec=None):
-        """Renders the value and units as a string in engineering notation."""
+        "Renders the value and units as a string in engineering notation."
 
         # determine precision
         if prec is None:
@@ -465,11 +467,11 @@ class Quantity:
             num = 100*float(mantissa)
         mantissa = "%.*f" % (prec-shift, num)
 
-        #remove trailing zeros (except if mantissa does not contain a .)
+        # remove trailing zeros (except if mantissa does not contain a .)
         if mantissa.find('.') >= 0:
             mantissa = mantissa.rstrip("0")
 
-        #remove trailing decimal point
+        # remove trailing decimal point
         mantissa = mantissa.rstrip(".")
 
         return _combine(mantissa, sf, units, Spacer)
@@ -488,7 +490,7 @@ class Quantity:
         A is character and gives the alignment: either '', '>', or '<'
         W is integer and gives the width
         P is integer and gives the precision
-        T is  and gives the type: choose from q, r, s, e, f, F, g, G, u, n, ...
+        T is char and gives the type: choose from q, r, s, e, f, g, u, n, d, ...
            q = quantity (1.4204GHz)
            r = real (1.4204G)
            s = string (1.4204GHz)
@@ -572,7 +574,6 @@ def all_to_eng_fmt(text):
 
     It is assumed that any units are assumed to be simple, meaning that they
     contain only alphabetic characters (no numbers or symbols)."""
-
     out = []
     start = 0
     for match in embedded_floating_point_notation.finditer(text):
@@ -580,7 +581,7 @@ def all_to_eng_fmt(text):
         number = match.group(0)
         try:
             number = quant_to_eng(number)
-        except ValueError: # pragma: no cover
+        except ValueError:  # pragma: no cover
             # something unexpected happened
             # but this is not essential, so ignore it
             pass
@@ -590,12 +591,11 @@ def all_to_eng_fmt(text):
 
 # All from engineering format {{{2
 def all_from_eng_fmt(text):
-    """Replace all occurrences of quantities found in text to engineering format.
+    """Convert all occurrences of quantities found in text to engineering format
 
     It is assumed that there is no space between the number and the scale factor
     and any units are assumed to be simple, meaning that they contain only
     alphabetic characters (no numbers or symbols)."""
-
     out = []
     start = 0
     for match in embedded_engineering_notation.finditer(text):
@@ -603,7 +603,7 @@ def all_from_eng_fmt(text):
         number = match.group(0)
         try:
             number = quant_to_str(number)
-        except ValueError: # pragma: no cover
+        except ValueError:  # pragma: no cover
             # something unexpected happened
             # but this is not essential, so ignore it
             pass
@@ -620,11 +620,11 @@ def add_to_namespace(quantities):
     """ Add to Namespace
 
     Takes a string that contains quantity definitions and places those
-    quantities in the calling namespace. The string may contain one definition per line, of the form:
+    quantities in the calling namespace. The string may contain one definition
+    per line, of the form:
         <name> = <value> -- <description>
     The description is discarded.
     """
-
     # Access the namespace of the calling frame
     import inspect
     frame = inspect.stack()[1][0]
@@ -642,5 +642,5 @@ def add_to_namespace(quantities):
             quantity.add_name(name)
             quantity.add_desc(desc)
             namespace[name] = quantity
-        else: # pragma: no cover
+        else:  # pragma: no cover
             raise ValueError('{}: not a valid number.'.format(line))
