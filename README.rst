@@ -229,6 +229,9 @@ Though rarely used directly, the Quantity class forms the foundation of the
    >>> h_line.to_eng(7)
    '1.4204058GHz'
 
+   >>> h_line.to_sci()
+   '1.4204×10⁰⁹Hz'
+
    >>> h_line.to_str()
    '1420.405751786e6Hz'
 

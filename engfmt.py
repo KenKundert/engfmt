@@ -1,3 +1,5 @@
+# encoding: utf-8
+#
 # Physical Quantities
 #
 # Utilities for working with physical quantities (numbers with units).
@@ -11,6 +13,7 @@
 #        1e6         -- num
 #        '1M'        -- unitless engineering format
 #        '1e6'       -- unitless string
+#
 
 # License {{{1
 # Copyright (C) 2016 Kenneth S. Kundert
@@ -475,6 +478,30 @@ class Quantity:
         mantissa = mantissa.rstrip(".")
 
         return _combine(mantissa, sf, units, Spacer)
+
+    def to_sci(self, prec=None):
+        "Renders the value and units as a string in scientific notation."
+
+        # determine precision
+        if prec is None:
+            prec = HumanPrecision
+        else:
+            prec = int(prec)
+        assert (prec >= 0)
+
+        # check for infinities or NaN
+        if self.is_infinite() or self.is_nan():
+            return _combine(self.strip(), '', self.units, ' ')
+
+        # convert into scientific notation with proper precision
+        value = self.to_float()
+        units = self.units
+        number = "%.*e" % (prec, value)
+        mantissa, exp = number.split("e")
+        exp = exp.replace('+', '')
+        superscripts = str.maketrans('-0123456789', '⁻⁰¹²³⁴⁵⁶⁷⁸⁹')
+        sf = '×10' + exp.translate(superscripts)
+        return _combine(mantissa, sf, units, '')
 
     def __str__(self):
         return self.to_eng()
