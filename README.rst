@@ -147,12 +147,14 @@ You can adjust some of the behavior of these functions on a global basis using
 
 .. code-block:: python
 
-   >>> from engfmt import set_preferences
+   >>> from engfmt import set_preferences, quant_to_eng, quant_to_sci
    >>> set_preferences(hprec=2, spacer=' ')
    >>> quant_to_eng('1.4204GHz')
    '1.42 GHz'
    >>> quant_to_eng('1.4204GHz', prec=4)
    '1.4204 GHz'
+   >>> quant_to_sci('1.4204GHz', prec=4)
+   '1.4204×10⁰⁹ Hz'
 
 Specifying *hprec* (human precision) to be 4 gives 5 digits of precision (you 
 get one more digit than the number you specify for precision). Thus, the valid 

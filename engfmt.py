@@ -1,4 +1,4 @@
-# encoding: utf-8
+# encoding: utf8
 #
 # Physical Quantities
 #
@@ -501,7 +501,7 @@ class Quantity:
         exp = exp.replace('+', '')
         superscripts = str.maketrans('-0123456789', '⁻⁰¹²³⁴⁵⁶⁷⁸⁹')
         sf = '×10' + exp.translate(superscripts)
-        return _combine(mantissa, sf, units, '')
+        return _combine(mantissa, sf, units, Spacer)
 
     def __str__(self):
         return self.to_eng()
@@ -578,6 +578,9 @@ def quant_to_tuple(value, units=None):
 
 def quant_to_eng(value, units=None, prec=None):
     return Quantity(value, units).to_eng(prec)
+
+def quant_to_sci(value, units=None, prec=None):
+    return Quantity(value, units).to_sci(prec)
 
 def quant_to_str(value, units=None):
     return Quantity(value, units).to_str()
