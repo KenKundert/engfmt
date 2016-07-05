@@ -8,7 +8,7 @@ with open('README.rst') as f:
 
 setup(
     name='engfmt',
-    version='1.0.2',
+    version='1.0.3',
     description='read and write in engineering notation',
     long_description=readme,
     author="Ken Kundert",
