@@ -116,6 +116,10 @@ format or in engineering format, and it may include the units.  For example:
    >>> quant_to_eng(1420400000.0, 'Hz')
    '1.4204GHz'
 
+   >>> from engfmt import quant_to_sci
+   >>> quant_to_sci('1.4204GHz', prec=4)
+   '1.4204×10⁰⁹ Hz'
+
    >>> from engfmt import quant_to_str
    >>> quant_to_str(1420400000.0, 'Hz')
    '1.4204e+09Hz'
