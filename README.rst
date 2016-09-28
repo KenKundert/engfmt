@@ -97,6 +97,23 @@ floating point notation is used when communicating with machines. People benefit
 from having a limited number of digits in the numbers, whereas machines benefit 
 from have full precision numbers.
 
+Quantities As Reals
+-------------------
+
+You can use a quantity in the same way that you can use a real number, meaning 
+that you can use it in expressions and it will evaluate to its real value::
+
+    >>> period = Quantity('1us')
+    >>> print(period)
+    1us
+
+    >>> frequency = 1/period
+    >>> print(frequency)
+    1000000.0
+
+Notice that when performing arithmetic operations on quantities the units are 
+completely ignored.
+
 Shortcut Functions
 ------------------
 

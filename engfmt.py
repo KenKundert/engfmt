@@ -310,8 +310,8 @@ def set_preferences(
         )
 
 # Quantity class {{{1
-class Quantity:
-    def __init__(self, value, units=None, ignore_sf=None):
+class Quantity(float):
+    def __new__(cls, value, units='', ignore_sf=None):
         """Physical Quantity
         A real quantity with units.
 
@@ -320,10 +320,6 @@ class Quantity:
                 2.5ns, 1.7 MHz, 1e6ohms, 2.8_V, 1e12 F, 42, etc.
         units: the quantities units.
         """
-        if units is None:
-            units = ''
-        self._value = value
-        self.units = units
         ignore_sf = IgnoreScaleFactors if ignore_sf is None else ignore_sf
 
         if is_str(value):
@@ -331,33 +327,49 @@ class Quantity:
                 number_converters = sf_free_number_converters
             else:
                 number_converters = all_number_converters
-            # if we get a string, keep all the pieces so we can reconstruct it
-            # exactly as it was given.
             for pattern, get_mant, get_sf, get_units in number_converters:
                 match = pattern.match(value)
                 if match:
-                    self._value = None
-                    self._mantissa = get_mant(match)
+                    mantissa = get_mant(match)
                     sf = get_sf(match)
-                    self._scale_factor = sf if sf != '_' else ''
-                    self.units = get_units(match)
-                    if self.units:
-                        if units:
-                            assert units == self.units
+                    sf = sf if sf != '_' else ''
+                    if units:
+                        assert units == get_units(match), 'mismatched units'
                     else:
-                        self.units = units
-                    return
-            try:
-                self._value, self.units = CONSTANTS[value]
-            except KeyError:
-                raise ValueError('%s: not a valid number.' % value)
+                        units = get_units(match)
+                    number = float(mantissa + MAPPINGS.get(sf, [sf])[0])
+                    break
+            else:
+                try:
+                    number, units = CONSTANTS[value]
+                except KeyError:
+                    raise ValueError('%s: not a valid number.' % value)
+        else:
+            number = value
+
+        self = float.__new__(cls, number)
+        self.units = units
+        try:
+            # if we got a string, keep the pieces so we can reconstruct it
+            # exactly as it was given.
+            self._mantissa = mantissa
+            self._scale_factor = sf
+        except NameError:
+            pass
+        return self
 
     def is_infinite(self):
-        value = self._mantissa if self._value is None else str(self._value)
+        try:
+            value = self._mantissa
+        except AttributeError:
+            value = str(self.real)
         return value.lower() in ['inf', '-inf', '+inf']
 
     def is_nan(self):
-        value = self._mantissa if self._value is None else str(self._value)
+        try:
+            value = self._mantissa
+        except AttributeError:
+            value = str(self.real)
         return value.lower() in ['nan', '-nan', '+nan']
 
     def add_name(self, name):
@@ -375,18 +387,18 @@ class Quantity:
         access to the value specified without any loss of precision if the value
         was specified as a string.
         """
-        if self._value is None:
+        try:
             return self._mantissa + self._scale_factor
-        else:
-            return num_to_str(self._value)
+        except AttributeError:
+            return num_to_str(self.real)
 
     def to_float(self):
         """Returns the value as a float."""
-        if self._value is None:
+        try:
             sf = self._scale_factor
             return float(self._mantissa + MAPPINGS.get(sf, [sf])[0])
-        else:
-            return float(self._value)
+        except AttributeError:
+            return self.real
 
     def to_unitless_str(self):
         """Renders the value as a string in floating point notation.
@@ -396,11 +408,11 @@ class Quantity:
         specified without any loss of precision if the value was specified as a
         string.
         """
-        if self._value is None:
+        try:
             sf = self._scale_factor
             return self._mantissa + MAPPINGS.get(sf, [sf])[0]
-        else:
-            return num_to_str(self._value)
+        except AttributeError:
+            return num_to_str(self.real)
 
     def to_unitless_eng(self, prec=None):
         "Renders the value as a string in engineering notation."
@@ -503,6 +515,9 @@ class Quantity:
         sf = '×10' + exp.translate(superscripts)
         return _combine(mantissa, sf, units, Spacer)
 
+    def __float__(self):
+        return self.to_float()
+
     def __str__(self):
         return self.to_eng()
 
@@ -570,9 +585,6 @@ class Quantity:
                 return '{0:{1}}'.format(value, fmt)
         else:
             return self.to_eng()
-
-    def __float__(self):
-        return self.to_float()
 
 
 # Shortcut functions {{{1
