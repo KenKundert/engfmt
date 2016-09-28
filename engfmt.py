@@ -386,7 +386,7 @@ class Quantity:
             sf = self._scale_factor
             return float(self._mantissa + MAPPINGS.get(sf, [sf])[0])
         else:
-            return self._value
+            return float(self._value)
 
     def to_unitless_str(self):
         """Renders the value as a string in floating point notation.
@@ -505,6 +505,9 @@ class Quantity:
 
     def __str__(self):
         return self.to_eng()
+
+    def __repr__(self):
+        return 'Quantity({!r})'.format(self.to_eng())
 
     def __format__(self, fmt):
         """Convert quantity to string for Python string format function.
