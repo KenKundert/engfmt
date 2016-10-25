@@ -97,6 +97,7 @@ floating point notation is used when communicating with machines. People benefit
 from having a limited number of digits in the numbers, whereas machines benefit 
 from have full precision numbers.
 
+
 Quantities As Reals
 -------------------
 
@@ -113,6 +114,7 @@ that you can use it in expressions and it will evaluate to its real value::
 
 Notice that when performing arithmetic operations on quantities the units are 
 completely ignored.
+
 
 Shortcut Functions
 ------------------
@@ -554,6 +556,8 @@ Use 'pip install engfmt' to install. Requires Python2.7 or Python3.3 or better.
 .. image:: https://coveralls.io/repos/github/KenKundert/engfmt/badge.svg?branch=master
     :target: https://coveralls.io/github/KenKundert/engfmt?branch=master
 
+Be aware that *engfmt* is being deprecated in favor of `quantiphy 
+<http://https://github.com/KenKundert/quantiphy/>`_.
 
 Testing
 -------
