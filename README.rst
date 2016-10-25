@@ -557,7 +557,7 @@ Use 'pip install engfmt' to install. Requires Python2.7 or Python3.3 or better.
     :target: https://coveralls.io/github/KenKundert/engfmt?branch=master
 
 Be aware that *engfmt* is being deprecated in favor of `quantiphy 
-<http://https://github.com/KenKundert/quantiphy/>`_.
+<https://github.com/KenKundert/quantiphy/>`_.
 
 Testing
 -------
