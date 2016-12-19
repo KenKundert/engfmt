@@ -4,12 +4,13 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
   - "nightly"
 install:
   - pip install .
   - pip install coveralls
 script:
-  - coverage run --source=engfmt setup.py test
+  - coverage run --source=engfmt setup.py pytest
 deploy:
     provider: pypi
     user: messenger

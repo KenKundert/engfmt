@@ -18,13 +18,14 @@ setup(
     license='GPLv3+',
     zip_safe=True,
     py_modules=['engfmt'],
-    install_requires=['six', 'pytest-runner'],
+    install_requires=['six'],
+    setup_requires=['pytest-runner>=2.0'],
     tests_require=['pytest'],
     keywords=[
         'quantities', 'engfmt', 'engineering', 'notation', 'SI', 'scale factors'
     ],
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 6 - Mature',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
