@@ -1,6 +1,10 @@
 engfmt - Engineering Format
 ===========================
 
+*engfmt* has been deprecated and replaced by `QuantiPhy 
+<https://github.com/KenKundert/quantiphy>`_.
+
+
 A light-weight package used to read and write numbers in engineering format. In 
 engineering format a number generally includes the units if available and uses 
 SI scale factors to indicate the magnitude of the number. For example:
