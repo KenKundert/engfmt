@@ -2,7 +2,7 @@ engfmt - Engineering Format
 ===========================
 
 *engfmt* has been deprecated and replaced by `QuantiPhy 
-<https://github.com/KenKundert/quantiphy>`_.
+<https://quantiphy.readthedocs.io>`_.
 
 
 A light-weight package used to read and write numbers in engineering format. In 
@@ -561,7 +561,7 @@ Use 'pip install engfmt' to install. Requires Python2.7 or Python3.3 or better.
     :target: https://coveralls.io/github/KenKundert/engfmt?branch=master
 
 Be aware that *engfmt* is being deprecated in favor of `quantiphy 
-<https://github.com/KenKundert/quantiphy/>`_.
+<https://quantiphy.readthedocs.io>`_.
 
 Testing
 -------
