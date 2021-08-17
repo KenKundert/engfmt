@@ -247,3 +247,4 @@ def test_number_recognition():
         hprec=None, mprec=None, spacer=None, unity=None, output=None,
         ignore_sf=None, assign_fmt=None, assign_rec=None
     )
+    names.clear()
