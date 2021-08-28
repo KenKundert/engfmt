@@ -218,8 +218,8 @@ test_cases = [
     Case('airliner', '1ns', ('1', 'ns'), '1ns', {'ignore_sf':True}),
 ]
 
-names = set()
 def test_number_recognition():
+    names = set()
     for case in test_cases:
         assert case.name not in names
         names.add(case.name)
@@ -247,4 +247,3 @@ def test_number_recognition():
         hprec=None, mprec=None, spacer=None, unity=None, output=None,
         ignore_sf=None, assign_fmt=None, assign_rec=None
     )
-    names.clear()

@@ -18,12 +18,11 @@ test_cases = [
     Case('meadow', 'blah ipn_250nA.', 'blah ipn_250nA.'),
 ]
 
-names = set()
 def test_text_processing():
+    names = set()
     set_preferences(spacer='', output=None)
     for case in test_cases:
         assert case.name not in names
         names.add(case.name)
         assert case.eng == all_to_eng_fmt(case.flt), case.name
         assert all_from_eng_fmt(case.eng) == case.flt, case.name
-    names.clear()

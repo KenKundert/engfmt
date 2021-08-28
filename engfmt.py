@@ -105,7 +105,7 @@ units = named_regex('units', r'(?:[a-zA-Z][-^/()\w]*)?')
 smpl_units = named_regex('units', r'(?:[a-zA-Z_]*)')
     # may only contain alphabetic characters, ex: V, A, Ohms, etc.
 currency = named_regex('currency', '[%s]' % CURRENCY_SYMBOLS)
-nan = named_regex('nan', '(?i)inf|nan')
+nan = named_regex('nan', '(?i:inf|nan)')
 left_delimit = r'(?:\A|(?<=[^a-zA-Z0-9_.]))'
 right_delimit = r'(?=[^-+0-9_]|\Z)'
 
@@ -186,7 +186,7 @@ simple_nan = (
 )
 
 all_number_converters = [
-    (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
+    (re.compile(r'\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
     for pattern, get_mant, get_sf, get_units in [
         number_with_exponent, number_with_scale_factor, simple_number,
         currency_with_exponent, currency_with_scale_factor, simple_currency,
@@ -195,7 +195,7 @@ all_number_converters = [
 ]
 
 sf_free_number_converters = [
-    (re.compile('\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
+    (re.compile(r'\A\s*{}\s*\Z'.format(pattern)), get_mant, get_sf, get_units)
     for pattern, get_mant, get_sf, get_units in [
         number_with_exponent, simple_number,
         currency_with_exponent, simple_currency,
@@ -296,7 +296,7 @@ def set_preferences(
         OutputScaleFactors = (
             output if output is not None else DEFAULT_OUTPUT_SCALE_FACTORS
         )
-    if ignore_sf is not 0:
+    if ignore_sf != 0:
         IgnoreScaleFactors = (
             ignore_sf if ignore_sf is not None else DEFAULT_IGNORE_SCALE_FACTORS
         )
