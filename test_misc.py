@@ -1,3 +1,5 @@
+# encoding: utf8
+
 from engfmt import *
 import pytest
 set_preferences(spacer=' ')
@@ -11,6 +13,10 @@ def test_misc():
 
     t=quant_to_eng('1420405751.786 Hz')
     assert t == '1.4204 GHz'
+
+    # fails for python2
+    #t=quant_to_sci('1420405751.786 Hz')
+    #assert t == '1.4204×10⁰⁹ Hz'
 
     s=quant_to_str('1420405751.786 Hz')
     assert s == '1420405751.786 Hz'

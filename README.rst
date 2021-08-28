@@ -11,8 +11,8 @@ A light-weight package used to read and write numbers in engineering format. In
 engineering format a number generally includes the units if available and uses 
 SI scale factors to indicate the magnitude of the number. For example:
 
-   | 1ns
-   | 1.4204GHz
+| 1ns
+| 1.4204GHz
 
 A quantity is the pairing of a real number and units, though the units may be 
 empty. This package is designed to convert quantities between the various ways 
