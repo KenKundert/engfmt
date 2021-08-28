@@ -11,6 +11,7 @@ setup(
     version='1.2.0',
     description='read and write in engineering notation',
     long_description=readme,
+    long_description_content_type='text/x-rst',
     author="Ken Kundert",
     author_email='engfmt@nurdletech.com',
     url='http://nurdletech.com/linux-utilities/engfmt',
