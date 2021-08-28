@@ -26,3 +26,4 @@ def test_text_processing():
         names.add(case.name)
         assert case.eng == all_to_eng_fmt(case.flt), case.name
         assert all_from_eng_fmt(case.eng) == case.flt, case.name
+    names.clear()
